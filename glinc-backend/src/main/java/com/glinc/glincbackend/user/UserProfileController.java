@@ -1,0 +1,90 @@
+package com.glinc.glincbackend.user;
+
+import com.glinc.glincbackend.auth.AppSession;
+import com.glinc.glincbackend.user.dto.UpdateUserProfileRequest;
+import com.glinc.glincbackend.user.dto.UserProfileDto;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+
+// El email se saca SIEMPRE de la sesion (AppSession), nunca del body, para impedir editar perfil ajeno.
+@RestController
+@RequestMapping("/api/user")
+public class UserProfileController {
+
+    private final UserProfileService service;
+
+    public UserProfileController(UserProfileService service) {
+        this.service = service;
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<UserProfileDto> getProfile(HttpServletRequest request) {
+        AppSession sesion = (AppSession) request.getAttribute("appSession");
+        UserProfileDto perfil = service.getProfile(sesion.getEmail());
+        return ResponseEntity.ok(perfil);
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(HttpServletRequest request,
+                                           @RequestBody UpdateUserProfileRequest body) {
+        if (body == null) {
+            return errorProblem(HttpStatus.BAD_REQUEST,
+                    "VALIDATION_ERROR",
+                    "Falta el cuerpo de la peticion.");
+        }
+
+        if (excedeLimite(body.getFirstName(), 100)) {
+            return errorProblem(HttpStatus.BAD_REQUEST,
+                    "VALIDATION_ERROR",
+                    "El nombre no puede superar 100 caracteres.");
+        }
+        if (excedeLimite(body.getLastName(), 100)) {
+            return errorProblem(HttpStatus.BAD_REQUEST,
+                    "VALIDATION_ERROR",
+                    "El apellido no puede superar 100 caracteres.");
+        }
+        if (excedeLimite(body.getPhone(), 30)) {
+            return errorProblem(HttpStatus.BAD_REQUEST,
+                    "VALIDATION_ERROR",
+                    "El telefono no puede superar 30 caracteres.");
+        }
+        LocalDate nacimiento = body.getBirthDate();
+        if (nacimiento != null && nacimiento.isAfter(LocalDate.now())) {
+            return errorProblem(HttpStatus.BAD_REQUEST,
+                    "VALIDATION_ERROR",
+                    "La fecha de nacimiento no puede ser futura.");
+        }
+
+        AppSession sesion = (AppSession) request.getAttribute("appSession");
+        UserProfileDto actualizado = service.update(sesion.getEmail(), body);
+        return ResponseEntity.ok(actualizado);
+    }
+
+    private boolean excedeLimite(String valor, int max) {
+        if (valor == null) {
+            return false;
+        }
+        return valor.trim().length() > max;
+    }
+
+    private ResponseEntity<Map<String, Object>> errorProblem(
+            HttpStatus status, String code, String detail) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("type", "about:blank");
+        body.put("title", status.getReasonPhrase());
+        body.put("status", status.value());
+        body.put("code", code);
+        body.put("detail", detail);
+        return ResponseEntity.status(status).body(body);
+    }
+}

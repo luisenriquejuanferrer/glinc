@@ -1,0 +1,149 @@
+package com.glinc.glincbackend.appointments;
+
+import com.glinc.glincbackend.appointments.dto.AppointmentDto;
+import com.glinc.glincbackend.appointments.dto.SaveAppointmentRequest;
+import com.glinc.glincbackend.auth.AppSession;
+import com.glinc.glincbackend.bridge.dto.BridgePatient;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/patients/{patientId}/appointments")
+public class AppointmentController {
+
+    private final AppointmentService service;
+
+    public AppointmentController(AppointmentService service) {
+        this.service = service;
+    }
+
+    @GetMapping
+    public ResponseEntity<?> list(HttpServletRequest request,
+                                  @PathVariable String patientId) {
+        AppSession sesion = (AppSession) request.getAttribute("appSession");
+        if (!pertenece(sesion, patientId)) {
+            return errorProblem(HttpStatus.NOT_FOUND,
+                    "PATIENT_NOT_FOUND",
+                    "El paciente no esta vinculado a tu cuenta.");
+        }
+        List<AppointmentDto> lista = service.list(sesion.getEmail(), patientId);
+        return ResponseEntity.ok(lista);
+    }
+
+    @PostMapping
+    public ResponseEntity<?> create(HttpServletRequest request,
+                                    @PathVariable String patientId,
+                                    @RequestBody SaveAppointmentRequest body) {
+        AppSession sesion = (AppSession) request.getAttribute("appSession");
+        if (!pertenece(sesion, patientId)) {
+            return errorProblem(HttpStatus.NOT_FOUND,
+                    "PATIENT_NOT_FOUND",
+                    "El paciente no esta vinculado a tu cuenta.");
+        }
+        String validacion = validar(body);
+        if (validacion != null) {
+            return errorProblem(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", validacion);
+        }
+        AppointmentDto creada = service.create(sesion.getEmail(), patientId, body);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creada);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> update(HttpServletRequest request,
+                                    @PathVariable String patientId,
+                                    @PathVariable Long id,
+                                    @RequestBody SaveAppointmentRequest body) {
+        AppSession sesion = (AppSession) request.getAttribute("appSession");
+        if (!pertenece(sesion, patientId)) {
+            return errorProblem(HttpStatus.NOT_FOUND,
+                    "PATIENT_NOT_FOUND",
+                    "El paciente no esta vinculado a tu cuenta.");
+        }
+        String validacion = validar(body);
+        if (validacion != null) {
+            return errorProblem(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", validacion);
+        }
+        AppointmentDto actualizada = service.update(sesion.getEmail(), id, body);
+        if (actualizada == null) {
+            return errorProblem(HttpStatus.NOT_FOUND,
+                    "APPOINTMENT_NOT_FOUND",
+                    "La cita no existe o no es tuya.");
+        }
+        return ResponseEntity.ok(actualizada);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(HttpServletRequest request,
+                                    @PathVariable String patientId,
+                                    @PathVariable Long id) {
+        AppSession sesion = (AppSession) request.getAttribute("appSession");
+        if (!pertenece(sesion, patientId)) {
+            return errorProblem(HttpStatus.NOT_FOUND,
+                    "PATIENT_NOT_FOUND",
+                    "El paciente no esta vinculado a tu cuenta.");
+        }
+        boolean borrada = service.delete(sesion.getEmail(), id);
+        if (!borrada) {
+            return errorProblem(HttpStatus.NOT_FOUND,
+                    "APPOINTMENT_NOT_FOUND",
+                    "La cita no existe o no es tuya.");
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    private String validar(SaveAppointmentRequest body) {
+        if (body == null) {
+            return "Falta el cuerpo de la peticion.";
+        }
+        if (body.getAppointmentAt() == null) {
+            return "La fecha de la cita es obligatoria.";
+        }
+        String prof = body.getProfessional();
+        if (prof == null || prof.trim().isEmpty()) {
+            return "El profesional es obligatorio.";
+        }
+        if (prof.trim().length() > 120) {
+            return "El profesional no puede superar 120 caracteres.";
+        }
+        if (body.getReason() != null && body.getReason().length() > 300) {
+            return "El motivo no puede superar 300 caracteres.";
+        }
+        return null;
+    }
+
+    private boolean pertenece(AppSession sesion, String patientId) {
+        if (sesion == null || sesion.getPatients() == null) {
+            return false;
+        }
+        for (BridgePatient p : sesion.getPatients()) {
+            if (patientId.equals(p.getPatientId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private ResponseEntity<Map<String, Object>> errorProblem(
+            HttpStatus status, String code, String detail) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("type", "about:blank");
+        body.put("title", status.getReasonPhrase());
+        body.put("status", status.value());
+        body.put("code", code);
+        body.put("detail", detail);
+        return ResponseEntity.status(status).body(body);
+    }
+}
