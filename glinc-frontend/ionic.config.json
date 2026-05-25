@@ -1,0 +1,7 @@
+{
+  "name": "glinc-frontend",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
