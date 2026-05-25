@@ -1,0 +1,41 @@
+# ─── OS / Editor / AI tooling ───────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+*.iml
+.claude/
+CLAUDE.md
+
+# ─── Logs ───────────────────────────────────────────────────────
+*.log
+log.txt
+
+# ─── Secrets / local config ─────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ─── Node (bridge + frontend) ───────────────────────────────────
+node_modules/
+dist/
+coverage/
+.npm/
+.eslintcache
+
+# ─── Angular / Ionic (frontend) ─────────────────────────────────
+glinc-frontend/.angular/
+glinc-frontend/www/
+glinc-frontend/.sourcemaps/
+glinc-frontend/.versions/
+
+# ─── Java / Maven (backend) ─────────────────────────────────────
+glinc-backend/target/
+glinc-backend/.mvn/wrapper/maven-wrapper.jar
+glinc-backend/HELP.md
+*.class
+
+# ─── TFG document (academic deliverable, not source) ────────────
+Memoria/
