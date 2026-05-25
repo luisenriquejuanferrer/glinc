@@ -1,0 +1,137 @@
+<div class="glw-modal-bg" (click)="cerrar()">
+
+  <div class="glw-modal" (click)="$event.stopPropagation()">
+
+    <div class="glw-modal-head">
+      <div class="modal-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M19 8v6M22 11h-6"/>
+        </svg>
+      </div>
+      <div style="flex: 1;">
+        <div style="font-size: 20px; font-weight: 600; letter-spacing: -0.015em;">
+          Invitar a un paciente
+        </div>
+        <div style="font-size: 13px; color: var(--ink-mute); margin-top: 4px;">
+          Los pacientes te añaden a ti desde su app FreeStyle Libre.
+        </div>
+      </div>
+      <button
+        type="button"
+        class="modal-close"
+        (click)="cerrar()"
+        aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 6l12 12M6 18L18 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="glw-modal-body">
+
+      <div class="gl-card modal-email-card">
+        <div class="modal-email-ico">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="14" rx="2"/>
+            <path d="M3 7l9 6 9-6"/>
+          </svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div class="modal-email-label">
+            Comparte este correo con tu paciente
+          </div>
+          <div class="modal-email-value">{{ miCorreo }}</div>
+        </div>
+        <button
+          type="button"
+          class="gl-btn gl-btn-ghost modal-copy-btn"
+          (click)="copiarCorreo()">
+          {{ copiado ? '✓ Copiado' : 'Copiar' }}
+        </button>
+      </div>
+
+      <div class="modal-section-title">
+        Pasos para el paciente
+      </div>
+
+      <ol class="modal-steps">
+        <li class="modal-step">
+          <div class="modal-step-num">1</div>
+          <div>
+            <div class="modal-step-title">Abrir FreeStyle Libre</div>
+            <div class="modal-step-desc">
+              En su móvil, con el sensor ya emparejado.
+            </div>
+          </div>
+        </li>
+        <li class="modal-step">
+          <div class="modal-step-num">2</div>
+          <div>
+            <div class="modal-step-title">
+              Compartir › Conexiones de cuidadores
+            </div>
+            <div class="modal-step-desc">
+              Desde el menú principal de la app.
+            </div>
+          </div>
+        </li>
+        <li class="modal-step">
+          <div class="modal-step-num">3</div>
+          <div>
+            <div class="modal-step-title">Añadir conexión</div>
+            <div class="modal-step-desc">
+              Botón en la parte inferior de la lista.
+            </div>
+          </div>
+        </li>
+        <li class="modal-step">
+          <div class="modal-step-num">4</div>
+          <div>
+            <div class="modal-step-title">
+              Introducir <strong>tu</strong> correo
+            </div>
+            <div class="modal-step-desc">
+              <span style="font-family: var(--font-mono);">{{ miCorreo }}</span>
+              — debe coincidir exactamente.
+            </div>
+          </div>
+        </li>
+        <li class="modal-step">
+          <div class="modal-step-num">5</div>
+          <div>
+            <div class="modal-step-title">Confirmar invitación</div>
+            <div class="modal-step-desc">
+              Le aparecerá un resumen de qué se comparte.
+            </div>
+          </div>
+        </li>
+      </ol>
+
+      <div class="modal-note">
+        <span>ⓘ</span>
+        <span>
+          Recibirás una notificación cuando la invitación llegue.
+          Tras aceptarla, las lecturas tardan hasta 5 minutos en aparecer.
+        </span>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="gl-btn gl-btn-ghost"
+          (click)="cerrar()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="gl-btn gl-btn-primary"
+          (click)="cerrar()">
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

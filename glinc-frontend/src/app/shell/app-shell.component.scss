@@ -1,0 +1,90 @@
+:host {
+  display: block;
+  height: 100vh;
+}
+
+:host ::ng-deep router-outlet + * {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.glw-nav-ico {
+  flex-shrink: 0;
+}
+
+.glw-user-wrap {
+  margin-top: auto;
+  position: relative;
+}
+
+.glw-user {
+  width: 100%;
+  margin-top: 0;
+  border: none;
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.glw-user-chev {
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+.glw-user.open .glw-user-chev {
+  transform: rotate(180deg);
+}
+
+.glw-user-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-md);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 50;
+}
+
+.glw-user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  background: transparent;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  text-align: left;
+}
+.glw-user-menu-item svg {
+  flex-shrink: 0;
+}
+.glw-user-menu-item:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.glw-user-menu-item.danger {
+  color: var(--danger-ink);
+}
+.glw-user-menu-item.danger:hover {
+  background: var(--danger-soft);
+}
+
+.glw-user-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
