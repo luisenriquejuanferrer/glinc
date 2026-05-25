@@ -1,0 +1,548 @@
+<div class="settings">
+  <div class="settings-grid">
+
+    <nav class="settings-nav">
+      <button
+        type="button"
+        class="glw-nav-item nav-mini"
+        [class.active]="tab === 'account'"
+        (click)="irATab('account')">Cuenta</button>
+
+      <button
+        type="button"
+        class="glw-nav-item nav-mini"
+        [class.active]="tab === 'measurement'"
+        (click)="irATab('measurement')">Mediciones y umbrales</button>
+
+      <button
+        type="button"
+        class="glw-nav-item nav-mini"
+        [class.active]="tab === 'notif'"
+        (click)="irATab('notif')">Notificaciones</button>
+
+      <button
+        type="button"
+        class="glw-nav-item nav-mini"
+        [class.active]="tab === 'app'"
+        (click)="irATab('app')">Aplicación</button>
+    </nav>
+
+    <div>
+
+      <ng-container *ngIf="tab === 'account'">
+        <div class="section-head">
+          <div class="section-title">Cuenta</div>
+          <div class="section-sub">
+            Tu perfil vinculado a Glinc
+          </div>
+        </div>
+
+        <div class="gl-card account-card">
+          <div class="gl-avatar avatar-lg">{{ iniciales() }}</div>
+          <div style="flex: 1;">
+            <div class="account-name">{{ nombreCompleto() }}</div>
+            <div class="account-email">{{ email }}</div>
+          </div>
+          <span class="gl-pill ok">
+            <span class="gl-dot"></span>Conectado
+          </span>
+        </div>
+
+        <div class="mini-section-title">Datos personales</div>
+        <div class="gl-card profile-form">
+          <div class="form-row">
+            <div class="gl-field">
+              <label class="gl-label" for="firstName">Nombre</label>
+              <input
+                id="firstName"
+                class="gl-input"
+                type="text"
+                maxlength="100"
+                [(ngModel)]="firstName"
+                [disabled]="cargandoPerfil || guardando" />
+            </div>
+            <div class="gl-field">
+              <label class="gl-label" for="lastName">Apellido</label>
+              <input
+                id="lastName"
+                class="gl-input"
+                type="text"
+                maxlength="100"
+                [(ngModel)]="lastName"
+                [disabled]="cargandoPerfil || guardando" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="gl-field">
+              <label class="gl-label" for="birthDate">Fecha de nacimiento</label>
+              <input
+                id="birthDate"
+                class="gl-input"
+                type="date"
+                [(ngModel)]="birthDate"
+                [disabled]="cargandoPerfil || guardando" />
+            </div>
+            <div class="gl-field">
+              <label class="gl-label" for="phone">Teléfono</label>
+              <input
+                id="phone"
+                class="gl-input"
+                type="tel"
+                maxlength="30"
+                [(ngModel)]="phone"
+                [disabled]="cargandoPerfil || guardando" />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <span
+              *ngIf="mensaje"
+              class="form-msg"
+              [class.ok]="mensaje.tipo === 'ok'"
+              [class.error]="mensaje.tipo === 'error'">
+              {{ mensaje.texto }}
+            </span>
+            <button
+              type="button"
+              class="gl-btn gl-btn-primary"
+              (click)="guardarPerfil()"
+              [disabled]="cargandoPerfil || guardando">
+              {{ guardando ? 'Guardando…' : 'Guardar cambios' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="mini-section-title">Conexión LibreLinkUp</div>
+        <div class="gl-card kv-card">
+          <div class="kv-row">
+            <div class="kv-label">Pacientes vinculados</div>
+            <div class="kv-value">{{ pacientesVinculados }}</div>
+          </div>
+          <div class="gl-divider"></div>
+          <div class="kv-row">
+            <div class="kv-label">Sesión válida hasta</div>
+            <div class="kv-value">{{ sesionExpiraEn || '—' }}</div>
+          </div>
+          <div class="gl-divider"></div>
+          <div class="kv-row">
+            <div class="kv-label">Token de sesión</div>
+            <div class="kv-value">•••• •••• •••• {{ tokenSufijo }}</div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="gl-btn gl-btn-danger logout-btn"
+          (click)="cerrarSesion()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+            <path d="M16 17l5-5-5-5"/>
+            <path d="M21 12H9"/>
+          </svg>
+          Cerrar sesión
+        </button>
+      </ng-container>
+
+      <ng-container *ngIf="tab === 'measurement'">
+        <div class="section-head">
+          <div class="section-title">Mediciones y umbrales</div>
+          <div class="section-sub">
+            Cómo se muestran las lecturas y cuándo se avisa
+          </div>
+        </div>
+
+        <div class="gl-card medida-card">
+          <div class="medida-titulo">Unidades</div>
+          <div class="gl-segmented unidades-segmented">
+            <button
+              type="button"
+              [class.active]="unidades === 'mgdl'"
+              (click)="cambiarUnidades('mgdl')">mg/dL</button>
+            <button
+              type="button"
+              [class.active]="unidades === 'mmol'"
+              (click)="cambiarUnidades('mmol')">mmol/L</button>
+          </div>
+        </div>
+
+        <div class="gl-card">
+          <div class="medida-titulo" style="margin-bottom: 14px;">
+            Umbrales de alerta
+          </div>
+
+          <!-- Umbrales se guardan siempre en mg/dL; conversion a mmol/L solo al pintar. -->
+          <div class="threshold">
+            <div class="threshold-row">
+              <div class="threshold-label">Glucosa alta</div>
+              <div class="gl-reading danger" style="font-size: 20px;">
+                <ng-container *ngIf="unidades === 'mgdl'; else altoMmol">
+                  {{ umbralAlto }}<span class="gl-unit">mg/dL</span>
+                </ng-container>
+                <ng-template #altoMmol>
+                  {{ (umbralAlto / 18) | number:'1.1-1' }}<span class="gl-unit">mmol/L</span>
+                </ng-template>
+              </div>
+            </div>
+            <input
+              type="range"
+              class="threshold-range threshold-danger"
+              min="140" max="250"
+              [(ngModel)]="umbralAlto"
+              (change)="guardarUmbrales()" />
+            <div class="threshold-minmax">
+              <span>140</span><span>250</span>
+            </div>
+          </div>
+
+          <div class="gl-divider"></div>
+
+          <div class="threshold">
+            <div class="threshold-row">
+              <div class="threshold-label">Glucosa baja</div>
+              <div class="gl-reading warn" style="font-size: 20px;">
+                <ng-container *ngIf="unidades === 'mgdl'; else bajoMmol">
+                  {{ umbralBajo }}<span class="gl-unit">mg/dL</span>
+                </ng-container>
+                <ng-template #bajoMmol>
+                  {{ (umbralBajo / 18) | number:'1.1-1' }}<span class="gl-unit">mmol/L</span>
+                </ng-template>
+              </div>
+            </div>
+            <input
+              type="range"
+              class="threshold-range threshold-warn"
+              min="50" max="90"
+              [(ngModel)]="umbralBajo"
+              (change)="guardarUmbrales()" />
+            <div class="threshold-minmax">
+              <span>50</span><span>90</span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="tab === 'notif'">
+        <div class="section-head">
+          <div class="section-title">Notificaciones</div>
+          <div class="section-sub">Cuándo y cómo recibes avisos</div>
+        </div>
+
+        <div class="gl-card kv-card">
+          <div class="setting-row">
+            <div style="flex: 1;">
+              <div class="setting-label">Alertas activadas</div>
+              <div class="setting-desc">
+                Avisos cuando hay valores fuera de rango
+              </div>
+            </div>
+            <button
+              type="button"
+              class="gl-switch"
+              [class.on]="notifs"
+              (click)="toggle('notifs')"
+              [attr.aria-pressed]="notifs"></button>
+          </div>
+          <div class="gl-divider inset"></div>
+          <div class="setting-row" [class.disabled]="!notifs">
+            <div style="flex: 1;">
+              <div class="setting-label">Sonido</div>
+              <div class="setting-desc">
+                Reproducir tono de alerta en el navegador
+              </div>
+            </div>
+            <button
+              type="button"
+              class="gl-switch"
+              [class.on]="sonido"
+              [disabled]="!notifs"
+              (click)="notifs && toggle('sonido')"
+              [attr.aria-pressed]="sonido"></button>
+          </div>
+          <div class="gl-divider inset"></div>
+          <div class="setting-row">
+            <div style="flex: 1;">
+              <div class="setting-label">Email</div>
+              <div class="setting-desc">
+                Resumen diario al correo {{ email }}
+              </div>
+            </div>
+            <button
+              type="button"
+              class="gl-switch"
+              [class.on]="emailNotif"
+              (click)="toggle('emailNotif')"
+              [attr.aria-pressed]="emailNotif"></button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="tab === 'app'">
+        <div class="section-head">
+          <div class="section-title">Aplicación</div>
+          <div class="section-sub">Idioma, apariencia y soporte</div>
+        </div>
+
+        <div class="gl-card kv-card">
+          <div class="link-row">
+            <div class="link-label">Idioma</div>
+            <div class="link-value">Español</div>
+            <span class="link-chev">›</span>
+          </div>
+          <div class="gl-divider inset"></div>
+          <div class="setting-row">
+            <div style="flex: 1;">
+              <div class="setting-label">Modo oscuro</div>
+              <div class="setting-desc">
+                Usa una paleta de colores oscura en toda la app
+              </div>
+            </div>
+            <button
+              type="button"
+              class="gl-switch"
+              [class.on]="modoOscuro"
+              (click)="cambiarTema()"
+              [attr.aria-pressed]="modoOscuro"></button>
+          </div>
+          <div class="gl-divider inset"></div>
+          <div class="link-row" (click)="abrirModalApp('about')">
+            <div class="link-label">Acerca de Glinc</div>
+            <div class="link-value">{{ appVersion }}</div>
+            <span class="link-chev">›</span>
+          </div>
+          <div class="gl-divider inset"></div>
+          <div class="link-row" (click)="abrirModalApp('docs')">
+            <div class="link-label">Documentación</div>
+            <span class="link-chev">›</span>
+          </div>
+          <div class="gl-divider inset"></div>
+          <div class="link-row" (click)="abrirModalApp('support')">
+            <div class="link-label">Contactar con soporte</div>
+            <span class="link-chev">›</span>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="modalApp"
+  class="glw-modal-bg"
+  (click)="cerrarModalApp()">
+
+  <div class="glw-modal" (click)="$event.stopPropagation()">
+
+    <div class="glw-modal-head">
+      <div class="modal-icon" [ngSwitch]="modalApp">
+        <svg *ngSwitchCase="'about'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 16v-4M12 8h.01"/>
+        </svg>
+        <svg *ngSwitchCase="'docs'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <path d="M14 2v6h6M8 13h8M8 17h6M8 9h2"/>
+        </svg>
+        <svg *ngSwitchCase="'support'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+        </svg>
+      </div>
+      <div style="flex: 1;">
+        <div style="font-size: 20px; font-weight: 600; letter-spacing: -0.015em;">
+          <ng-container [ngSwitch]="modalApp">
+            <span *ngSwitchCase="'about'">Acerca de {{ appNombre }}</span>
+            <span *ngSwitchCase="'docs'">Documentación</span>
+            <span *ngSwitchCase="'support'">Contactar con soporte</span>
+          </ng-container>
+        </div>
+        <div style="font-size: 13px; color: var(--ink-mute); margin-top: 4px;">
+          <ng-container [ngSwitch]="modalApp">
+            <span *ngSwitchCase="'about'">Información general y créditos.</span>
+            <span *ngSwitchCase="'docs'">Cómo está construido el ecosistema.</span>
+            <span *ngSwitchCase="'support'">¿Tienes un problema o sugerencia?</span>
+          </ng-container>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="modal-close"
+        (click)="cerrarModalApp()"
+        aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 6l12 12M6 18L18 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="glw-modal-body">
+
+      <ng-container *ngIf="modalApp === 'about'">
+        <p class="modal-paragraph">
+          <strong>{{ appNombre }}</strong> es una aplicación de monitoreo
+          de glucosa en tiempo real para múltiples pacientes que usan
+          el sensor <em>FreeStyle Libre</em> de Abbott.
+        </p>
+        <p class="modal-paragraph">
+          Permite a un cuidador (familiar, profesional sanitario) ver
+          en un único panel la última lectura de cada paciente, su
+          tendencia y el histórico de los últimos días.
+        </p>
+
+        <div class="gl-card kv-card modal-kv">
+          <div class="kv-row">
+            <div class="kv-label">Versión</div>
+            <div class="kv-value">{{ appVersion }}</div>
+          </div>
+          <div class="gl-divider"></div>
+          <div class="kv-row">
+            <div class="kv-label">Autor</div>
+            <div class="kv-value">{{ appAutor }}</div>
+          </div>
+          <div class="gl-divider"></div>
+          <div class="kv-row">
+            <div class="kv-label">Año</div>
+            <div class="kv-value">{{ appAnio }}</div>
+          </div>
+          <div class="gl-divider"></div>
+          <div class="kv-row">
+            <div class="kv-label">Licencia</div>
+            <div class="kv-value">Uso académico (TFG)</div>
+          </div>
+        </div>
+
+        <div class="modal-note">
+          <span>ⓘ</span>
+          <span>
+            Proyecto de Trabajo Fin de Grado — Desarrollo de
+            Aplicaciones Multiplataforma (DAM).
+          </span>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="modalApp === 'docs'">
+        <p class="modal-paragraph">
+          Glinc está formado por tres módulos que cooperan entre sí.
+          Cada uno tiene su propio README en la carpeta del proyecto.
+        </p>
+
+        <div class="modal-section-title">Módulos del ecosistema</div>
+
+        <ol class="modal-steps">
+          <li class="modal-step">
+            <div class="modal-step-num">1</div>
+            <div>
+              <div class="modal-step-title">cgm-bridge-service</div>
+              <div class="modal-step-desc">
+                Microservicio Node.js + TypeScript. Hace de puente
+                entre la API privada de LibreLinkUp (Abbott) y el
+                backend de Glinc. Documentación: Swagger UI en
+                <span class="modal-mono">/docs</span> del puerto 3001.
+              </div>
+            </div>
+          </li>
+          <li class="modal-step">
+            <div class="modal-step-num">2</div>
+            <div>
+              <div class="modal-step-title">glinc-backend</div>
+              <div class="modal-step-desc">
+                API REST en Java + Spring Boot. Persiste las lecturas
+                de glucosa en PostgreSQL y gestiona la autenticación.
+                Documentación: Swagger UI en
+                <span class="modal-mono">/docs</span> del puerto 8080.
+              </div>
+            </div>
+          </li>
+          <li class="modal-step">
+            <div class="modal-step-num">3</div>
+            <div>
+              <div class="modal-step-title">glinc-frontend</div>
+              <div class="modal-step-desc">
+                Aplicación web Angular + Ionic (esta misma).
+                Funciona en cualquier navegador moderno.
+              </div>
+            </div>
+          </li>
+        </ol>
+
+        <div class="modal-section-title">¿Cómo se conectan?</div>
+        <p class="modal-paragraph">
+          El frontend habla únicamente con el backend (puerto 8080).
+          El backend, a su vez, consulta al bridge (puerto 3001) cuando
+          necesita datos frescos de LibreLinkUp. Las credenciales del
+          paciente solo viajan durante el inicio de sesión y nunca se
+          almacenan en disco.
+        </p>
+      </ng-container>
+
+      <ng-container *ngIf="modalApp === 'support'">
+        <p class="modal-paragraph">
+          Glinc es un proyecto académico mantenido por una sola
+          persona. Si encuentras un fallo, tienes una idea o necesitas
+          ayuda con el inicio de sesión, contacta directamente con el
+          autor.
+        </p>
+
+        <div class="gl-card modal-email-card">
+          <div class="modal-email-ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="5" width="18" height="14" rx="2"/>
+              <path d="M3 7l9 6 9-6"/>
+            </svg>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div class="modal-email-label">
+              Correo de soporte
+            </div>
+            <div class="modal-email-value">{{ soporteEmail }}</div>
+          </div>
+          <a
+            class="gl-btn gl-btn-ghost modal-copy-btn"
+            [href]="'mailto:' + soporteEmail + '?subject=Glinc%20' + appVersion">
+            Escribir
+          </a>
+        </div>
+
+        <div class="modal-section-title">Antes de escribir</div>
+        <ol class="modal-steps">
+          <li class="modal-step">
+            <div class="modal-step-num">1</div>
+            <div>
+              <div class="modal-step-title">Indica tu versión</div>
+              <div class="modal-step-desc">
+                Estás en <span class="modal-mono">{{ appVersion }}</span>.
+              </div>
+            </div>
+          </li>
+          <li class="modal-step">
+            <div class="modal-step-num">2</div>
+            <div>
+              <div class="modal-step-title">Describe los pasos</div>
+              <div class="modal-step-desc">
+                Qué hiciste, qué esperabas que ocurriera y qué ocurrió.
+              </div>
+            </div>
+          </li>
+          <li class="modal-step">
+            <div class="modal-step-num">3</div>
+            <div>
+              <div class="modal-step-title">No envíes tu contraseña</div>
+              <div class="modal-step-desc">
+                Nunca te pediremos tu contraseña de LibreLinkUp por
+                correo.
+              </div>
+            </div>
+          </li>
+        </ol>
+      </ng-container>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="gl-btn gl-btn-primary"
+          (click)="cerrarModalApp()">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
