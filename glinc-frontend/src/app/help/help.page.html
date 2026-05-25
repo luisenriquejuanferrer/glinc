@@ -1,0 +1,541 @@
+<div class="help">
+  <div class="help-grid">
+
+    <nav class="help-nav">
+      <button
+        type="button"
+        class="glw-nav-item nav-mini"
+        [class.active]="tab === 'glucosa'"
+        (click)="irATab('glucosa')">Glucosa en sangre</button>
+
+      <button
+        type="button"
+        class="glw-nav-item nav-mini"
+        [class.active]="tab === 'rango'"
+        (click)="irATab('rango')">Rango y umbrales</button>
+
+      <button
+        type="button"
+        class="glw-nav-item nav-mini"
+        [class.active]="tab === 'tir'"
+        (click)="irATab('tir')">Tiempo en Rango</button>
+
+      <button
+        type="button"
+        class="glw-nav-item nav-mini"
+        [class.active]="tab === 'a1c'"
+        (click)="irATab('a1c')">HbA1c estimada</button>
+
+      <button
+        type="button"
+        class="glw-nav-item nav-mini"
+        [class.active]="tab === 'tendencias'"
+        (click)="irATab('tendencias')">Tendencias</button>
+
+      <button
+        type="button"
+        class="glw-nav-item nav-mini"
+        [class.active]="tab === 'actualizacion'"
+        (click)="irATab('actualizacion')">Cómo se actualiza</button>
+
+      <button
+        type="button"
+        class="glw-nav-item nav-mini"
+        [class.active]="tab === 'glosario'"
+        (click)="irATab('glosario')">Glosario</button>
+    </nav>
+
+    <div>
+
+      <ng-container *ngIf="tab === 'glucosa'">
+        <div class="section-head">
+          <div class="section-title">Glucosa en sangre</div>
+          <div class="section-sub">
+            Qué mide el sensor y en qué unidades.
+          </div>
+        </div>
+
+        <div class="gl-card help-card">
+          <p class="modal-paragraph">
+            Glinc lee la glucosa de un sensor
+            <strong>FreeStyle Libre</strong> de Abbott a través del
+            servicio en la nube <strong>LibreLinkUp</strong>. El sensor
+            mide la glucosa del líquido intersticial (no de la sangre
+            directamente), por lo que puede ir 5–10 minutos por detrás
+            de un pinchazo capilar.
+          </p>
+
+          <div class="modal-section-title">Unidades</div>
+          <p class="modal-paragraph">
+            La glucosa se expresa en dos unidades equivalentes:
+          </p>
+          <ul class="help-list">
+            <li>
+              <span class="modal-mono">mg/dL</span> — miligramos por
+              decilitro. Es la unidad por defecto en España, EE. UU. y
+              gran parte de Europa.
+            </li>
+            <li>
+              <span class="modal-mono">mmol/L</span> — milimoles por
+              litro. Se usa en Reino Unido, Canadá, Australia y la
+              mayoría del mundo científico.
+            </li>
+          </ul>
+
+          <div class="modal-section-title">Conversión</div>
+          <p class="modal-paragraph">
+            Para pasar de una unidad a otra se usa el factor 18 (más
+            exactamente 18,0182):
+          </p>
+          <p class="modal-paragraph">
+            <span class="modal-mono">mmol/L = mg/dL ÷ 18</span><br>
+            <span class="modal-mono">mg/dL = mmol/L × 18</span>
+          </p>
+          <p class="modal-paragraph">
+            Ejemplo: una glucosa de
+            <span class="modal-mono">126 mg/dL</span> equivale a
+            <span class="modal-mono">126 ÷ 18 = 7,0 mmol/L</span>.
+          </p>
+
+          <div class="modal-note">
+            <span>ⓘ</span>
+            <span>
+              Glinc guarda siempre los datos internamente en mg/dL
+              (la unidad del sensor) y solo cambia el formato al
+              pintarlos. Puedes cambiar tu preferencia en
+              <strong>Configuración → Mediciones</strong>.
+            </span>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="tab === 'rango'">
+        <div class="section-head">
+          <div class="section-title">Rango y umbrales</div>
+          <div class="section-sub">
+            Qué se considera glucosa normal, baja o alta.
+          </div>
+        </div>
+
+        <div class="gl-card help-card">
+          <p class="modal-paragraph">
+            Una persona sin diabetes mantiene la glucosa en un rango
+            estrecho. En la práctica clínica para personas con
+            diabetes el <strong>rango objetivo</strong> recomendado
+            por la mayoría de guías es de
+            <span class="modal-mono">70–180 mg/dL</span>
+            (<span class="modal-mono">3,9–10,0 mmol/L</span>).
+          </p>
+
+          <div class="modal-section-title">Estados</div>
+          <ul class="help-list">
+            <li>
+              <span class="gl-pill warn">Bajo</span>
+              &nbsp;Glucosa por <strong>debajo</strong> del umbral
+              bajo. Se llama <strong>hipoglucemia</strong>. Puede
+              causar mareo, sudoración o desorientación. Por debajo
+              de 54 mg/dL se considera grave.
+            </li>
+            <li>
+              <span class="gl-pill ok">En rango</span>
+              &nbsp;Glucosa entre el umbral bajo y el alto. Es la
+              zona objetivo.
+            </li>
+            <li>
+              <span class="gl-pill danger">Alto</span>
+              &nbsp;Glucosa por <strong>encima</strong> del umbral
+              alto. Se llama <strong>hiperglucemia</strong>. Mantenida
+              en el tiempo daña vasos sanguíneos, riñones y vista.
+            </li>
+          </ul>
+
+          <div class="modal-section-title">Umbrales personalizables</div>
+          <p class="modal-paragraph">
+            Los umbrales por defecto en Glinc son
+            <span class="modal-mono">70 / 180 mg/dL</span>, alineados
+            con las recomendaciones de la ADA (American Diabetes
+            Association) para personas adultas con diabetes tipo 1 o 2.
+          </p>
+          <p class="modal-paragraph">
+            Puedes ajustarlos en
+            <strong>Configuración → Mediciones</strong>: el cambio se
+            aplica al instante en el dashboard, en la banda verde de
+            la gráfica y en las alertas del listado de pacientes.
+          </p>
+
+          <div class="modal-note">
+            <span>⚠</span>
+            <span>
+              Los umbrales óptimos varían según la edad, el embarazo
+              y el tipo de diabetes. Consulta con el equipo médico
+              antes de modificar los valores por defecto.
+            </span>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="tab === 'tir'">
+        <div class="section-head">
+          <div class="section-title">Tiempo en Rango (TIR)</div>
+          <div class="section-sub">
+            Cuánto del tiempo la glucosa estuvo dentro del rango
+            objetivo.
+          </div>
+        </div>
+
+        <div class="gl-card help-card">
+          <p class="modal-paragraph">
+            El <strong>Tiempo en Rango</strong> (TIR, del inglés
+            <em>Time in Range</em>) es el porcentaje de lecturas del
+            sensor que cayeron dentro del rango objetivo durante el
+            período seleccionado (12h, 1d, 7d, 14d, 30d o 3m).
+          </p>
+
+          <div class="modal-section-title">Cómo se calcula</div>
+          <p class="modal-paragraph">
+            Glinc recorre todas las lecturas del período y las
+            clasifica en tres grupos según los umbrales del usuario:
+          </p>
+          <ul class="help-list">
+            <li>
+              <strong>% Bajo</strong> — lecturas por debajo del
+              umbral bajo.
+            </li>
+            <li>
+              <strong>% En rango</strong> — lecturas dentro del rango
+              objetivo. <em>Este es el TIR propiamente dicho.</em>
+            </li>
+            <li>
+              <strong>% Alto</strong> — lecturas por encima del
+              umbral alto.
+            </li>
+          </ul>
+          <p class="modal-paragraph">
+            La fórmula es:
+          </p>
+          <p class="modal-paragraph">
+            <span class="modal-mono">
+              TIR = (lecturas_en_rango / lecturas_totales) × 100
+            </span>
+          </p>
+
+          <div class="modal-section-title">Objetivo clínico</div>
+          <p class="modal-paragraph">
+            El consenso internacional (Battelino et al., 2019)
+            recomienda como objetivo general para adultos con
+            diabetes:
+          </p>
+          <ul class="help-list">
+            <li><strong>TIR ≥ 70 %</strong> del día (más de 16 h).</li>
+            <li><strong>% Bajo &lt; 4 %</strong> (menos de 1 h al día).</li>
+            <li><strong>% Alto &lt; 25 %</strong> (menos de 6 h al día).</li>
+          </ul>
+          <p class="modal-paragraph">
+            Cada 5 % de mejora en TIR se asocia a una reducción
+            clínicamente significativa del riesgo de complicaciones
+            a largo plazo.
+          </p>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="tab === 'a1c'">
+        <div class="section-head">
+          <div class="section-title">Hemoglobina glicosilada (HbA1c)</div>
+          <div class="section-sub">
+            Estimación a partir del promedio de glucosa del período.
+          </div>
+        </div>
+
+        <div class="gl-card help-card">
+          <p class="modal-paragraph">
+            La <strong>HbA1c</strong> (o "glicosilada") mide el
+            porcentaje de hemoglobina que tiene glucosa adherida.
+            Como los glóbulos rojos viven unos 3 meses, refleja el
+            promedio de glucosa de los <strong>últimos 2–3 meses</strong>.
+            Es la prueba estándar de control de la diabetes.
+          </p>
+
+          <div class="modal-section-title">Estimación a partir del CGM</div>
+          <p class="modal-paragraph">
+            No hace falta una analítica para tener una idea
+            aproximada: a partir del promedio de glucosa del sensor
+            se puede <em>estimar</em> la HbA1c con la fórmula
+            <strong>ADAG</strong> (A1c-Derived Average Glucose),
+            publicada por la ADA en 2008 (Nathan et al.):
+          </p>
+          <p class="modal-paragraph">
+            <span class="modal-mono">
+              HbA1c (%) = (promedio_mgdl + 46,7) / 28,7
+            </span>
+          </p>
+
+          <div class="modal-section-title">Ejemplo</div>
+          <p class="modal-paragraph">
+            Si el promedio del período es
+            <span class="modal-mono">154 mg/dL</span>:
+          </p>
+          <p class="modal-paragraph">
+            <span class="modal-mono">
+              (154 + 46,7) / 28,7 = 200,7 / 28,7 ≈ 7,0 %
+            </span>
+          </p>
+
+          <div class="modal-section-title">Valores de referencia</div>
+          <ul class="help-list">
+            <li><strong>&lt; 5,7 %</strong> — normal (sin diabetes).</li>
+            <li><strong>5,7 – 6,4 %</strong> — prediabetes.</li>
+            <li><strong>≥ 6,5 %</strong> — diabetes.</li>
+            <li>
+              <strong>&lt; 7,0 %</strong> — objetivo habitual en
+              adultos con diabetes.
+            </li>
+          </ul>
+
+          <div class="modal-note">
+            <span>⚠</span>
+            <span>
+              La HbA1c que muestra Glinc es <strong>una estimación</strong>
+              basada en el promedio del período elegido. Para acercarse
+              al valor clínico real (que mide los 2–3 meses previos),
+              selecciona el período <strong>3m</strong> en la gráfica.
+              En cualquier caso, no sustituye al análisis de sangre
+              de la consulta médica.
+            </span>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="tab === 'tendencias'">
+        <div class="section-head">
+          <div class="section-title">Tendencias</div>
+          <div class="section-sub">
+            Qué significa cada flecha en la lista de pacientes.
+          </div>
+        </div>
+
+        <div class="gl-card help-card">
+          <p class="modal-paragraph">
+            La <strong>tendencia</strong> indica hacia dónde se está
+            moviendo la glucosa en los últimos 15 minutos. El sensor
+            la calcula comparando varias lecturas seguidas: no es lo
+            que vale ahora, es lo que se prevé que valga pronto.
+          </p>
+
+          <div class="modal-section-title">Significado de cada flecha</div>
+          <ul class="help-list trend-list">
+            <li>
+              <span class="trend-arrow">↑↑</span>
+              <div>
+                <strong>Subiendo rápido</strong> —
+                más de 2 mg/dL por minuto. Cambio brusco; puede
+                requerir atención inmediata.
+              </div>
+            </li>
+            <li>
+              <span class="trend-arrow">↑</span>
+              <div>
+                <strong>Subiendo</strong> —
+                entre 1 y 2 mg/dL por minuto. Subida sostenida.
+              </div>
+            </li>
+            <li>
+              <span class="trend-arrow">→</span>
+              <div>
+                <strong>Estable</strong> —
+                menos de 1 mg/dL por minuto. La glucosa apenas cambia.
+              </div>
+            </li>
+            <li>
+              <span class="trend-arrow">↓</span>
+              <div>
+                <strong>Bajando</strong> —
+                entre 1 y 2 mg/dL por minuto de bajada.
+              </div>
+            </li>
+            <li>
+              <span class="trend-arrow">↓↓</span>
+              <div>
+                <strong>Bajando rápido</strong> —
+                más de 2 mg/dL por minuto. Riesgo de hipoglucemia
+                inminente si el valor actual ya es bajo.
+              </div>
+            </li>
+            <li>
+              <span class="trend-arrow">?</span>
+              <div>
+                <strong>Sin datos</strong> —
+                no hay lecturas suficientes para calcular la tendencia
+                (sensor recién puesto o sin señal reciente).
+              </div>
+            </li>
+          </ul>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="tab === 'actualizacion'">
+        <div class="section-head">
+          <div class="section-title">Cómo se actualizan los datos</div>
+          <div class="section-sub">
+            Del sensor a la pantalla, paso a paso.
+          </div>
+        </div>
+
+        <div class="gl-card help-card">
+          <ol class="modal-steps">
+            <li class="modal-step">
+              <div class="modal-step-num">1</div>
+              <div>
+                <div class="modal-step-title">Sensor → móvil del paciente</div>
+                <div class="modal-step-desc">
+                  El sensor FreeStyle Libre toma una medida cada
+                  minuto. El móvil del paciente con la app
+                  <em>FreeStyle Libre</em> sincroniza esas lecturas
+                  con la nube de Abbott (LibreView).
+                </div>
+              </div>
+            </li>
+            <li class="modal-step">
+              <div class="modal-step-num">2</div>
+              <div>
+                <div class="modal-step-title">LibreView → LibreLinkUp</div>
+                <div class="modal-step-desc">
+                  Si el paciente ha invitado a un cuidador, los datos
+                  quedan disponibles para él vía la API privada de
+                  <em>LibreLinkUp</em>.
+                </div>
+              </div>
+            </li>
+            <li class="modal-step">
+              <div class="modal-step-num">3</div>
+              <div>
+                <div class="modal-step-title">Bridge → Backend de Glinc</div>
+                <div class="modal-step-desc">
+                  El microservicio
+                  <span class="modal-mono">cgm-bridge-service</span>
+                  consulta LibreLinkUp en nombre del cuidador. Un
+                  <em>poller</em> del backend pide cada
+                  <span class="modal-mono">90 segundos</span> las
+                  nuevas lecturas y las guarda en la base de datos.
+                </div>
+              </div>
+            </li>
+            <li class="modal-step">
+              <div class="modal-step-num">4</div>
+              <div>
+                <div class="modal-step-title">Backend → Tu navegador</div>
+                <div class="modal-step-desc">
+                  Esta misma pantalla pregunta al backend cada
+                  <span class="modal-mono">90 segundos</span>. Si hay
+                  una lectura nueva, el dashboard y la gráfica se
+                  actualizan solos, sin necesidad de recargar la
+                  página.
+                </div>
+              </div>
+            </li>
+          </ol>
+
+          <div class="modal-note">
+            <span>ⓘ</span>
+            <span>
+              Como el sensor mide líquido intersticial, lo que ves
+              en pantalla puede ir entre 5 y 10 minutos por detrás
+              de un pinchazo capilar. Es normal y no es un fallo.
+            </span>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="tab === 'glosario'">
+        <div class="section-head">
+          <div class="section-title">Glosario</div>
+          <div class="section-sub">
+            Términos que aparecen en la app y qué significan.
+          </div>
+        </div>
+
+        <div class="gl-card help-card">
+          <ul class="help-glossary">
+            <li>
+              <strong>CGM</strong>
+              <span>
+                <em>Continuous Glucose Monitor</em>. Sistema de
+                monitorización continua de glucosa mediante un
+                sensor subcutáneo.
+              </span>
+            </li>
+            <li>
+              <strong>FreeStyle Libre</strong>
+              <span>
+                Sensor CGM de Abbott que se aplica en la parte
+                posterior del brazo y dura 14 días.
+              </span>
+            </li>
+            <li>
+              <strong>LibreLinkUp</strong>
+              <span>
+                Servicio en la nube de Abbott que permite a un
+                cuidador ver en remoto la glucosa del paciente.
+              </span>
+            </li>
+            <li>
+              <strong>HbA1c / Glicosilada</strong>
+              <span>
+                Hemoglobina con glucosa adherida. Indicador de
+                control de la diabetes a 2–3 meses.
+              </span>
+            </li>
+            <li>
+              <strong>ADAG</strong>
+              <span>
+                <em>A1c-Derived Average Glucose</em>. Fórmula que
+                relaciona el promedio de glucosa con la HbA1c.
+              </span>
+            </li>
+            <li>
+              <strong>TIR</strong>
+              <span>
+                <em>Time in Range</em>. % del tiempo con la glucosa
+                dentro del rango objetivo.
+              </span>
+            </li>
+            <li>
+              <strong>Hipoglucemia</strong>
+              <span>
+                Glucosa baja, por debajo del umbral bajo (por
+                defecto 70 mg/dL).
+              </span>
+            </li>
+            <li>
+              <strong>Hiperglucemia</strong>
+              <span>
+                Glucosa alta, por encima del umbral alto (por
+                defecto 180 mg/dL).
+              </span>
+            </li>
+            <li>
+              <strong>mg/dL</strong>
+              <span>
+                Miligramos por decilitro. Unidad de glucosa usada
+                en España.
+              </span>
+            </li>
+            <li>
+              <strong>mmol/L</strong>
+              <span>
+                Milimoles por litro. Unidad de glucosa equivalente,
+                usada en UK y mundo científico.
+              </span>
+            </li>
+          </ul>
+        </div>
+      </ng-container>
+
+      <div class="help-disclaimer">
+        Glinc es un Trabajo Fin de Grado de carácter académico. La
+        información mostrada no sustituye al consejo, diagnóstico ni
+        tratamiento de un profesional sanitario. Ante cualquier duda
+        médica, contacta con tu equipo asistencial.
+      </div>
+    </div>
+  </div>
+</div>
