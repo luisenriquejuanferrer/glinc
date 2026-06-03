@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // Devuelve la lista entera ordenada por fecha desc; el frontend separa proximas/pasadas con la hora local.
+// Desde V7 las citas son per-paciente (compartidas entre cuidadores que tengan acceso al paciente).
 @Service
 public class AppointmentService {
 
@@ -17,9 +18,9 @@ public class AppointmentService {
         this.repository = repository;
     }
 
-    public List<AppointmentDto> list(String userEmail, String patientId) {
+    public List<AppointmentDto> list(String patientId) {
         List<Appointment> filas = repository
-                .findByUserEmailAndPatientIdOrderByAppointmentAtDesc(userEmail, patientId);
+                .findByPatientIdOrderByAppointmentAtDesc(patientId);
         List<AppointmentDto> resultado = new ArrayList<>();
         for (Appointment a : filas) {
             resultado.add(toDto(a));
@@ -27,10 +28,8 @@ public class AppointmentService {
         return resultado;
     }
 
-    public AppointmentDto create(String userEmail, String patientId,
-                                 SaveAppointmentRequest dto) {
+    public AppointmentDto create(String patientId, SaveAppointmentRequest dto) {
         Appointment nueva = new Appointment(
-                userEmail,
                 patientId,
                 dto.getAppointmentAt(),
                 dto.getProfessional().trim(),
@@ -38,8 +37,8 @@ public class AppointmentService {
         return toDto(repository.save(nueva));
     }
 
-    public AppointmentDto update(String userEmail, Long id, SaveAppointmentRequest dto) {
-        Appointment cita = repository.findByIdAndUserEmail(id, userEmail).orElse(null);
+    public AppointmentDto update(Long id, SaveAppointmentRequest dto) {
+        Appointment cita = repository.findById(id).orElse(null);
         if (cita == null) {
             return null;
         }
@@ -49,8 +48,8 @@ public class AppointmentService {
         return toDto(repository.save(cita));
     }
 
-    public boolean delete(String userEmail, Long id) {
-        Appointment cita = repository.findByIdAndUserEmail(id, userEmail).orElse(null);
+    public boolean delete(Long id) {
+        Appointment cita = repository.findById(id).orElse(null);
         if (cita == null) {
             return false;
         }

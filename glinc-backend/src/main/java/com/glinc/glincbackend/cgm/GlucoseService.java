@@ -44,19 +44,11 @@ public class GlucoseService {
         return resultado;
     }
 
-    // includeSynthetic=true incluye lecturas SEED ademas de REAL.
-    public List<ReadingDto> obtenerHistorico(String patientId, int hours,
-                                             boolean includeSynthetic) {
+    public List<ReadingDto> obtenerHistorico(String patientId, int hours) {
         Instant desde = Instant.now().minus(hours, ChronoUnit.HOURS);
 
-        List<GlucoseReading> lecturas;
-        if (includeSynthetic) {
-            lecturas = repository.findByPatientIdAndReadAtAfterOrderByReadAtAsc(
-                    patientId, desde);
-        } else {
-            lecturas = repository.findByPatientIdAndSourceAndReadAtAfterOrderByReadAtAsc(
-                    patientId, ReadingSource.REAL, desde);
-        }
+        List<GlucoseReading> lecturas = repository
+                .findByPatientIdAndReadAtAfterOrderByReadAtAsc(patientId, desde);
 
         List<ReadingDto> dtos = new ArrayList<>();
         for (GlucoseReading lectura : lecturas) {

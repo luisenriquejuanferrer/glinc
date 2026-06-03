@@ -39,7 +39,7 @@ public class AppointmentController {
                     "PATIENT_NOT_FOUND",
                     "El paciente no esta vinculado a tu cuenta.");
         }
-        List<AppointmentDto> lista = service.list(sesion.getEmail(), patientId);
+        List<AppointmentDto> lista = service.list(patientId);
         return ResponseEntity.ok(lista);
     }
 
@@ -57,7 +57,7 @@ public class AppointmentController {
         if (validacion != null) {
             return errorProblem(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", validacion);
         }
-        AppointmentDto creada = service.create(sesion.getEmail(), patientId, body);
+        AppointmentDto creada = service.create(patientId, body);
         return ResponseEntity.status(HttpStatus.CREATED).body(creada);
     }
 
@@ -76,11 +76,11 @@ public class AppointmentController {
         if (validacion != null) {
             return errorProblem(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", validacion);
         }
-        AppointmentDto actualizada = service.update(sesion.getEmail(), id, body);
+        AppointmentDto actualizada = service.update(id, body);
         if (actualizada == null) {
             return errorProblem(HttpStatus.NOT_FOUND,
                     "APPOINTMENT_NOT_FOUND",
-                    "La cita no existe o no es tuya.");
+                    "La cita no existe.");
         }
         return ResponseEntity.ok(actualizada);
     }
@@ -95,11 +95,11 @@ public class AppointmentController {
                     "PATIENT_NOT_FOUND",
                     "El paciente no esta vinculado a tu cuenta.");
         }
-        boolean borrada = service.delete(sesion.getEmail(), id);
+        boolean borrada = service.delete(id);
         if (!borrada) {
             return errorProblem(HttpStatus.NOT_FOUND,
                     "APPOINTMENT_NOT_FOUND",
-                    "La cita no existe o no es tuya.");
+                    "La cita no existe.");
         }
         return ResponseEntity.noContent().build();
     }

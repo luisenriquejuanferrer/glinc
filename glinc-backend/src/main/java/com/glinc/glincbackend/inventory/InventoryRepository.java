@@ -9,8 +9,8 @@ import java.util.Optional;
 @Repository
 public interface InventoryRepository extends JpaRepository<InventoryItem, Long> {
 
-    List<InventoryItem> findByUserEmailAndPatientId(String userEmail, String patientId);
+    List<InventoryItem> findByPatientId(String patientId);
 
-    Optional<InventoryItem> findByUserEmailAndPatientIdAndItemType(
-            String userEmail, String patientId, InventoryItemType itemType);
+    Optional<InventoryItem> findByPatientIdAndItemType(
+            String patientId, InventoryItemType itemType);
 }

@@ -82,11 +82,8 @@ public class GlucosePoller {
 
         GlucoseReading fila = new GlucoseReading(
                 paciente.getPatientId(),
-                paciente.getFirstName(),
-                paciente.getLastName(),
                 lectura.getMgDl(),
                 lectura.getTrend(),
-                ReadingSource.REAL,
                 lectura.getTimestamp());
         repository.save(fila);
         return true;

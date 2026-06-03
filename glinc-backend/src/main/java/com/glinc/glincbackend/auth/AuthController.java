@@ -6,7 +6,9 @@ import com.glinc.glincbackend.auth.dto.MeResponse;
 import com.glinc.glincbackend.bridge.BridgeClient;
 import com.glinc.glincbackend.bridge.BridgeException;
 import com.glinc.glincbackend.bridge.dto.SessionResponse;
-import com.glinc.glincbackend.cgm.DemoSeeder;
+import com.glinc.glincbackend.cgm.HistoryBackfillService;
+import com.glinc.glincbackend.patient.CaregiverPatientService;
+import com.glinc.glincbackend.patient.PatientService;
 import com.glinc.glincbackend.user.UserProfileService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -35,14 +37,21 @@ public class AuthController {
 
     private final BridgeClient bridgeClient;
     private final AppSessionStore sessionStore;
-    private final DemoSeeder demoSeeder;
+    private final HistoryBackfillService historyBackfillService;
+    private final PatientService patientService;
+    private final CaregiverPatientService caregiverPatientService;
     private final UserProfileService userProfileService;
 
     public AuthController(BridgeClient bridgeClient, AppSessionStore sessionStore,
-                          DemoSeeder demoSeeder, UserProfileService userProfileService) {
+                          HistoryBackfillService historyBackfillService,
+                          PatientService patientService,
+                          CaregiverPatientService caregiverPatientService,
+                          UserProfileService userProfileService) {
         this.bridgeClient = bridgeClient;
         this.sessionStore = sessionStore;
-        this.demoSeeder = demoSeeder;
+        this.historyBackfillService = historyBackfillService;
+        this.patientService = patientService;
+        this.caregiverPatientService = caregiverPatientService;
         this.userProfileService = userProfileService;
     }
 
@@ -71,9 +80,16 @@ public class AuthController {
                     expiresAt);
             String token = sessionStore.guardar(sesion);
 
-            demoSeeder.seedIfNeeded(sesion.getPatients());
+            // Upsert sincrono antes del backfill: las lecturas que insertara el backfill
+            // necesitan que el patient_id exista en la tabla `patients` (FK).
+            patientService.upsertAll(sesion.getPatients());
 
+            // Tambien antes del backfill: caregiver_patients require que `caregivers.email` exista,
+            // asi que primero creamos/encontramos el perfil del cuidador.
             userProfileService.findOrCreate(peticion.getEmail());
+            caregiverPatientService.linkAll(peticion.getEmail(), sesion.getPatients());
+
+            historyBackfillService.backfillAsync(sesion);
 
             LoginResponse respuesta = new LoginResponse(
                     token,

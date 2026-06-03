@@ -9,13 +9,8 @@ public interface GlucoseReadingRepository extends JpaRepository<GlucoseReading, 
 
     boolean existsByPatientIdAndReadAt(String patientId, Instant readAt);
 
-    boolean existsByPatientIdAndSource(String patientId, ReadingSource source);
-
     GlucoseReading findFirstByPatientIdOrderByReadAtDesc(String patientId);
 
     List<GlucoseReading> findByPatientIdAndReadAtAfterOrderByReadAtAsc(
             String patientId, Instant desde);
-
-    List<GlucoseReading> findByPatientIdAndSourceAndReadAtAfterOrderByReadAtAsc(
-            String patientId, ReadingSource source, Instant desde);
 }

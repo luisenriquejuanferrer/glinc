@@ -14,11 +14,10 @@ export class GlucoseService {
     return this.http.get<PatientReading[]>(this.apiBase + '/patients');
   }
 
-  // includeSynthetic=true incluye las lecturas del seeder demo del backend (source=SEED).
   getHistory(patientId: string, hours: number): Observable<GlucosePoint[]> {
     return this.http.get<GlucosePoint[]>(
       this.apiBase + '/patients/' + patientId + '/history',
-      { params: { hours: hours, includeSynthetic: true } }
+      { params: { hours: hours } }
     );
   }
 }

@@ -13,7 +13,8 @@ import jakarta.persistence.Table;
 
 import java.time.Instant;
 
-// Unicidad (user_email, patient_id, item_type) la impone la constraint UNIQUE de V3.
+// Desde V7 el inventario es per-paciente (no per cuidador+paciente). Si dos cuidadores
+// gestionan el mismo paciente, comparten inventario. La unicidad la impone (patient_id, item_type).
 @Entity
 @Table(name = "patient_inventory")
 public class InventoryItem {
@@ -21,9 +22,6 @@ public class InventoryItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "user_email", nullable = false, length = 255)
-    private String userEmail;
 
     @Column(name = "patient_id", nullable = false, length = 255)
     private String patientId;
@@ -45,10 +43,8 @@ public class InventoryItem {
     public InventoryItem() {
     }
 
-    public InventoryItem(String userEmail, String patientId,
-                         InventoryItemType itemType,
+    public InventoryItem(String patientId, InventoryItemType itemType,
                          String quantity, InventoryStatus status) {
-        this.userEmail = userEmail;
         this.patientId = patientId;
         this.itemType = itemType;
         this.quantity = quantity;
@@ -62,7 +58,6 @@ public class InventoryItem {
     }
 
     public Long getId() { return id; }
-    public String getUserEmail() { return userEmail; }
     public String getPatientId() { return patientId; }
     public InventoryItemType getItemType() { return itemType; }
     public String getQuantity() { return quantity; }

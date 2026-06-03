@@ -38,7 +38,7 @@ public class InventoryController {
                     "El paciente no esta vinculado a tu cuenta.");
         }
 
-        List<InventoryItemDto> lista = service.list(sesion.getEmail(), patientId);
+        List<InventoryItemDto> lista = service.list(patientId);
         return ResponseEntity.ok(lista);
     }
 
@@ -72,8 +72,7 @@ public class InventoryController {
                     "La cantidad no puede superar 60 caracteres.");
         }
 
-        InventoryItemDto guardada = service.update(
-                sesion.getEmail(), patientId, tipo, body);
+        InventoryItemDto guardada = service.update(patientId, tipo, body);
         return ResponseEntity.ok(guardada);
     }
 

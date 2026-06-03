@@ -11,6 +11,8 @@ import jakarta.persistence.Table;
 
 import java.time.Instant;
 
+// Desde V7 las citas son per-paciente (no per cuidador+paciente). Si dos cuidadores
+// gestionan el mismo paciente, comparten la lista de citas.
 @Entity
 @Table(name = "patient_appointments")
 public class Appointment {
@@ -18,9 +20,6 @@ public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "user_email", nullable = false, length = 255)
-    private String userEmail;
 
     @Column(name = "patient_id", nullable = false, length = 255)
     private String patientId;
@@ -43,9 +42,8 @@ public class Appointment {
     public Appointment() {
     }
 
-    public Appointment(String userEmail, String patientId,
-                       Instant appointmentAt, String professional, String reason) {
-        this.userEmail = userEmail;
+    public Appointment(String patientId, Instant appointmentAt,
+                       String professional, String reason) {
         this.patientId = patientId;
         this.appointmentAt = appointmentAt;
         this.professional = professional;
@@ -65,7 +63,6 @@ public class Appointment {
     }
 
     public Long getId() { return id; }
-    public String getUserEmail() { return userEmail; }
     public String getPatientId() { return patientId; }
     public Instant getAppointmentAt() { return appointmentAt; }
     public String getProfessional() { return professional; }

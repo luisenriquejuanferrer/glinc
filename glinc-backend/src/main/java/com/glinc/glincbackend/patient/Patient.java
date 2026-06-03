@@ -1,4 +1,4 @@
-package com.glinc.glincbackend.user;
+package com.glinc.glincbackend.patient;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,17 +8,14 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
-import java.time.LocalDate;
 
-// Tabla `caregivers` desde V7 (antes se llamaba `users`). El nombre Java se mantiene
-// como UserProfile para no romper la API publica /api/user/profile que ya consume el frontend.
 @Entity
-@Table(name = "caregivers")
-public class UserProfile {
+@Table(name = "patients")
+public class Patient {
 
     @Id
-    @Column(name = "email", nullable = false, length = 255)
-    private String email;
+    @Column(name = "patient_id", nullable = false, length = 255)
+    private String patientId;
 
     @Column(name = "first_name", length = 100)
     private String firstName;
@@ -26,27 +23,23 @@ public class UserProfile {
     @Column(name = "last_name", length = 100)
     private String lastName;
 
-    @Column(name = "birth_date")
-    private LocalDate birthDate;
-
-    @Column(name = "phone", length = 30)
-    private String phone;
-
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    public UserProfile() {
+    public Patient() {
     }
 
-    public UserProfile(String email) {
-        this.email = email;
+    public Patient(String patientId, String firstName, String lastName) {
+        this.patientId = patientId;
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
 
     @PrePersist
-    public void onCreate() {
+    void onCreate() {
         Instant ahora = Instant.now();
         if (this.createdAt == null) {
             this.createdAt = ahora;
@@ -55,16 +48,16 @@ public class UserProfile {
     }
 
     @PreUpdate
-    public void onUpdate() {
+    void onUpdate() {
         this.updatedAt = Instant.now();
     }
 
-    public String getEmail() {
-        return email;
+    public String getPatientId() {
+        return patientId;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setPatientId(String patientId) {
+        this.patientId = patientId;
     }
 
     public String getFirstName() {
@@ -81,22 +74,6 @@ public class UserProfile {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public LocalDate getBirthDate() {
-        return birthDate;
-    }
-
-    public void setBirthDate(LocalDate birthDate) {
-        this.birthDate = birthDate;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
     }
 
     public Instant getCreatedAt() {

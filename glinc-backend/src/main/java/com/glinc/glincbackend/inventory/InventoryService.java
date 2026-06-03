@@ -19,9 +19,8 @@ public class InventoryService {
     }
 
     // Siempre devuelve los 4 tipos (rellena defaults si no existen) para que el frontend no tenga que diferenciar.
-    public List<InventoryItemDto> list(String userEmail, String patientId) {
-        List<InventoryItem> filas = repository.findByUserEmailAndPatientId(
-                userEmail, patientId);
+    public List<InventoryItemDto> list(String patientId) {
+        List<InventoryItem> filas = repository.findByPatientId(patientId);
         Map<InventoryItemType, InventoryItem> porTipo = new HashMap<>();
         for (InventoryItem fila : filas) {
             porTipo.put(fila.getItemType(), fila);
@@ -44,13 +43,13 @@ public class InventoryService {
         return resultado;
     }
 
-    public InventoryItemDto update(String userEmail, String patientId,
+    public InventoryItemDto update(String patientId,
                                    InventoryItemType type,
                                    UpdateInventoryRequest dto) {
         InventoryItem fila = repository
-                .findByUserEmailAndPatientIdAndItemType(userEmail, patientId, type)
+                .findByPatientIdAndItemType(patientId, type)
                 .orElseGet(() -> new InventoryItem(
-                        userEmail, patientId, type, null, InventoryStatus.OK));
+                        patientId, type, null, InventoryStatus.OK));
 
         fila.setQuantity(normalizar(dto.getQuantity()));
 

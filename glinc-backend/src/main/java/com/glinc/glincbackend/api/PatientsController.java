@@ -36,7 +36,6 @@ public class PatientsController {
     public ResponseEntity<?> historico(
             @PathVariable String patientId,
             @RequestParam(defaultValue = "168") int hours,
-            @RequestParam(defaultValue = "false") boolean includeSynthetic,
             HttpServletRequest request) {
 
         AppSession sesion = (AppSession) request.getAttribute("appSession");
@@ -52,8 +51,7 @@ public class PatientsController {
                     "El parametro hours solo admite 12, 24, 168, 336, 720 o 2160.");
         }
 
-        return ResponseEntity.ok(
-                glucoseService.obtenerHistorico(patientId, hours, includeSynthetic));
+        return ResponseEntity.ok(glucoseService.obtenerHistorico(patientId, hours));
     }
 
     private boolean pacienteEnSesion(AppSession sesion, String patientId) {
