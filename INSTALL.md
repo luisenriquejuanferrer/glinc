@@ -40,11 +40,6 @@ Durante la instalación:
 - Puerto por defecto: `5432`
 - Marca **pgAdmin** si quieres interfaz gráfica
 
-### 5. Ionic CLI (para el frontend)
-```powershell
-npm install -g @ionic/cli
-```
-
 ---
 
 ## Clonar el repositorio
@@ -166,7 +161,7 @@ $env:DB_PASSWORD = "admin"
 **Terminal 3 — Frontend:**
 ```powershell
 cd glinc-frontend
-ionic serve
+npm start -- --port 8100
 ```
 
 ---
@@ -231,7 +226,7 @@ Luego vuelve a arrancar el backend.
 glinc/
   cgm-bridge-service/    Node.js — puente LibreLink Up ↔ backend
   glinc-backend/         Spring Boot — lógica de negocio y API REST
-  glinc-frontend/        Angular + Ionic — app web
+  glinc-frontend/        Angular — app web
   start-glinc.ps1        Arranca los 3 servicios
   stop-glinc.ps1         Para los 3 servicios
   README.md              Este archivo

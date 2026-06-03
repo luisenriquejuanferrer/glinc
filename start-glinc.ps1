@@ -20,11 +20,11 @@ if (Get-Command wt.exe -ErrorAction SilentlyContinue) {
             "powershell", "-NoExit", "-Command", ".\mvnw.cmd spring-boot:run",
         ";",
         "new-tab", "--title", "Frontend :8100", "-d", $frontend,
-            "powershell", "-NoExit", "-Command", "ionic serve"
+            "powershell", "-NoExit", "-Command", "npm start -- --port 8100"
     )
     & wt.exe @wtArgs
 } else {
     Start-Process powershell -ArgumentList @("-NoExit", "-Command", "Set-Location '$bridge'; npm run dev")
     Start-Process powershell -ArgumentList @("-NoExit", "-Command", "Set-Location '$backend'; .\mvnw.cmd spring-boot:run")
-    Start-Process powershell -ArgumentList @("-NoExit", "-Command", "Set-Location '$frontend'; ionic serve")
+    Start-Process powershell -ArgumentList @("-NoExit", "-Command", "Set-Location '$frontend'; npm start -- --port 8100")
 }
