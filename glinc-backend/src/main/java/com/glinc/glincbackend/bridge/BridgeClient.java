@@ -1,6 +1,7 @@
 package com.glinc.glincbackend.bridge;
 
 import com.glinc.glincbackend.bridge.dto.CreateSessionRequest;
+import com.glinc.glincbackend.bridge.dto.HistoryResponse;
 import com.glinc.glincbackend.bridge.dto.PatientsResponse;
 import com.glinc.glincbackend.bridge.dto.SessionResponse;
 import org.slf4j.Logger;
@@ -114,6 +115,34 @@ public class BridgeClient {
         } catch (RestClientException e) {
             throw new BridgeException(
                     "No se pudo contactar con el bridge pidiendo pacientes "
+                            + "(x-request-id=" + requestId + ")", e);
+        }
+    }
+
+    public HistoryResponse fetchHistory(String sessionId, String patientId) {
+        String requestId = UUID.randomUUID().toString();
+
+        try {
+            HistoryResponse respuesta = restClient.get()
+                    .uri("/sessions/{id}/patients/{pid}/history", sessionId, patientId)
+                    .header("x-request-id", requestId)
+                    .retrieve()
+                    .body(HistoryResponse.class);
+
+            if (respuesta == null) {
+                throw new BridgeException(
+                        "El bridge devolvio una respuesta vacia pidiendo historico "
+                                + "(x-request-id=" + requestId + ")");
+            }
+            return respuesta;
+
+        } catch (RestClientResponseException e) {
+            throw new BridgeException("El bridge devolvio " + e.getStatusCode()
+                    + " pidiendo historico (x-request-id=" + requestId + "): "
+                    + e.getResponseBodyAsString(), e);
+        } catch (RestClientException e) {
+            throw new BridgeException(
+                    "No se pudo contactar con el bridge pidiendo historico "
                             + "(x-request-id=" + requestId + ")", e);
         }
     }

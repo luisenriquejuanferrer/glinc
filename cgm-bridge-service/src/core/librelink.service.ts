@@ -131,9 +131,25 @@ export class LibreLinkService {
     }
     if (this.inFlightHistory) return this.inFlightHistory;
 
+    // El stream puede no haber completado su login aun cuando el backfill llega
+    // justo despues del POST /sessions; aseguramos JWT antes de pedir historico.
+    if (!this.client.me) {
+      await this.login();
+    }
+
     this.inFlightHistory = this.client.history().then((history) => {
       this.historyCache = { value: history, expiresAt: Date.now() + this.strategy.historyCacheTtlMs };
       return history;
+    }).catch(async (error: unknown) => {
+      // 400 "missing or malformed jwt" → JWT caducado o invalido. Reintenta una vez tras re-login.
+      const msg = error instanceof Error ? error.message : String(error);
+      if (/jwt|unauthor|forbidden/i.test(msg)) {
+        await this.login();
+        const history = await this.client.history();
+        this.historyCache = { value: history, expiresAt: Date.now() + this.strategy.historyCacheTtlMs };
+        return history;
+      }
+      throw error;
     }).finally(() => {
       this.inFlightHistory = null;
     });
