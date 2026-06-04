@@ -210,7 +210,109 @@
       </div>
     </div>
 
-    <div class="info-grid">
+    <!-- Vista médico (rol DOCTOR): variabilidad + TIR detallado + perfil diario + mapa de calor -->
+    <ng-container *ngIf="esMedico">
+
+      <div class="glw-stats">
+        <div class="gl-card stat-cell">
+          <div class="stat-label">Desviación estándar</div>
+          <div class="gl-reading" style="font-size: 26px;">
+            {{ mostrarLectura(desviacion) }}<span class="gl-unit">{{ unidadLabel() }}</span>
+          </div>
+        </div>
+        <div class="gl-card stat-cell">
+          <div class="stat-label">Coef. variación</div>
+          <div
+            class="gl-reading"
+            [class.ok]="coefVariacion <= 36"
+            [class.danger]="coefVariacion > 36"
+            style="font-size: 26px;">
+            {{ coefVariacion | number:'1.1-1' }}<span class="gl-unit">%</span>
+          </div>
+        </div>
+        <div class="gl-card stat-cell">
+          <div class="stat-label">GMI</div>
+          <div class="gl-reading" style="font-size: 26px;">
+            {{ gmi | number:'1.1-1' }}<span class="gl-unit">%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="glw-chart-card">
+        <div class="chart-head">
+          <div class="chart-title">Tiempo en rango detallado</div>
+        </div>
+        <div class="tir-bar">
+          <div class="tir-bar-seg tir-danger" [style.width.%]="tir5MuyBajo"></div>
+          <div class="tir-bar-seg tir-warn"   [style.width.%]="tir5Bajo"></div>
+          <div class="tir-bar-seg tir-ok"     [style.width.%]="tir5Rango"></div>
+          <div class="tir-bar-seg tir-warn"   [style.width.%]="tir5Alto"></div>
+          <div class="tir-bar-seg tir-danger" [style.width.%]="tir5MuyAlto"></div>
+        </div>
+        <div class="tir-legend" style="margin-top: 12px;">
+          <div>
+            <div class="tir-legend-label">Muy bajo</div>
+            <div class="tir-legend-value danger">{{ tir5MuyBajo }}<span class="tir-legend-pct">%</span></div>
+          </div>
+          <div>
+            <div class="tir-legend-label">Bajo</div>
+            <div class="tir-legend-value warn">{{ tir5Bajo }}<span class="tir-legend-pct">%</span></div>
+          </div>
+          <div>
+            <div class="tir-legend-label">En rango</div>
+            <div class="tir-legend-value ok">{{ tir5Rango }}<span class="tir-legend-pct">%</span></div>
+          </div>
+          <div>
+            <div class="tir-legend-label">Alto</div>
+            <div class="tir-legend-value warn">{{ tir5Alto }}<span class="tir-legend-pct">%</span></div>
+          </div>
+          <div>
+            <div class="tir-legend-label">Muy alto</div>
+            <div class="tir-legend-value danger">{{ tir5MuyAlto }}<span class="tir-legend-pct">%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glw-chart-card">
+        <div class="chart-head">
+          <div class="chart-title">Perfil diario promedio (por hora)</div>
+        </div>
+        <apx-chart
+          [series]="perfilDiarioChart.series"
+          [chart]="perfilDiarioChart.chart"
+          [stroke]="perfilDiarioChart.stroke"
+          [fill]="perfilDiarioChart.fill"
+          [colors]="perfilDiarioChart.colors"
+          [dataLabels]="perfilDiarioChart.dataLabels"
+          [markers]="perfilDiarioChart.markers"
+          [xaxis]="perfilDiarioChart.xaxis"
+          [yaxis]="perfilDiarioChart.yaxis"
+          [grid]="perfilDiarioChart.grid"
+          [annotations]="perfilDiarioChart.annotations"
+          [tooltip]="perfilDiarioChart.tooltip">
+        </apx-chart>
+      </div>
+
+      <div class="glw-chart-card">
+        <div class="chart-head">
+          <div class="chart-title">Mapa de calor (día × hora, mg/dL)</div>
+        </div>
+        <apx-chart
+          [series]="heatmapChart.series"
+          [chart]="heatmapChart.chart"
+          [dataLabels]="heatmapChart.dataLabels"
+          [colors]="heatmapChart.colors"
+          [plotOptions]="heatmapChart.plotOptions"
+          [xaxis]="heatmapChart.xaxis"
+          [yaxis]="heatmapChart.yaxis"
+          [grid]="heatmapChart.grid"
+          [tooltip]="heatmapChart.tooltip">
+        </apx-chart>
+      </div>
+
+    </ng-container>
+
+    <div class="info-grid" *ngIf="!esMedico">
 
       <div>
         <div class="panel-head">

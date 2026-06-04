@@ -48,6 +48,27 @@
           </span>
         </div>
 
+        <div class="mini-section-title">Rol</div>
+        <div class="gl-card" style="padding: 16px;">
+          <div style="font-size: 13px; color: var(--ink-mute); margin-bottom: 12px;">
+            El rol <strong>Cuidador</strong> muestra inventario y citas médicas.
+            El rol <strong>Médico</strong> muestra la vista clínica (variabilidad,
+            perfil diario y mapa de calor) sin gestión de inventario ni citas.
+          </div>
+          <div class="gl-segmented">
+            <button
+              type="button"
+              [class.active]="role === 'CAREGIVER'"
+              [disabled]="guardandoRol"
+              (click)="cambiarRol('CAREGIVER')">Cuidador</button>
+            <button
+              type="button"
+              [class.active]="role === 'DOCTOR'"
+              [disabled]="guardandoRol"
+              (click)="cambiarRol('DOCTOR')">Médico</button>
+          </div>
+        </div>
+
         <div class="mini-section-title">Datos personales</div>
         <div class="gl-card profile-form">
           <div class="form-row">

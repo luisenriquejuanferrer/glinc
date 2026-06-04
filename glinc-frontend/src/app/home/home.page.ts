@@ -19,6 +19,7 @@ import { PreferencesService } from '../services/preferences.service';
 import { SearchService } from '../services/search.service';
 import { InventoryService } from '../services/inventory.service';
 import { AppointmentService } from '../services/appointment.service';
+import { UserService } from '../services/user.service';
 import { Unidades } from '../models/preferences.model';
 import {
   InventoryItem,
@@ -92,6 +93,28 @@ export class HomePage implements OnInit, OnDestroy {
   tirOkPct = 0;
   tirAltoPct = 0;
 
+  // --- Vista medico (rol DOCTOR) ---
+  // El rol llega del perfil; si es DOCTOR se ocultan inventario/citas y se
+  // muestran las graficas clinicas (variabilidad, TIR-5, perfil diario, heatmap).
+  esMedico = false;
+
+  // Variabilidad glucemica (umbrales clinicos en mg/dL, independientes de la unidad mostrada).
+  desviacion = 0;       // desviacion estandar
+  coefVariacion = 0;    // CV% = DE / promedio * 100
+  gmi = 0;              // Glucose Management Indicator = 3.31 + 0.02392 * promedio_mgdl
+
+  // TIR de 5 zonas (porcentajes): muy bajo <54, bajo 54-70, rango 70-180, alto 180-250, muy alto >250.
+  tir5MuyBajo = 0;
+  tir5Bajo = 0;
+  tir5Rango = 0;
+  tir5Alto = 0;
+  tir5MuyAlto = 0;
+
+  // Perfil diario: glucosa media por hora del dia (0-23) agregando todos los dias.
+  perfilDiarioChart: any = this.crearOpcionesPerfilDiario();
+  // Mapa de calor dia x hora: filas=ultimos dias, columnas=horas, color=glucosa media.
+  heatmapChart: any = this.crearOpcionesHeatmap();
+
   private readonly colorMarca = '#2b86b3';
 
   chartOptions: ChartOptions = {
@@ -158,6 +181,7 @@ export class HomePage implements OnInit, OnDestroy {
     private searchService: SearchService,
     private inventoryService: InventoryService,
     private appointmentService: AppointmentService,
+    private userService: UserService,
   ) {}
 
   ngOnInit(): void {
@@ -175,11 +199,27 @@ export class HomePage implements OnInit, OnDestroy {
       if (this.historico.length > 0) {
         this.recalcularEstadisticas();
         this.recalcularGrafica();
+        if (this.esMedico) {
+          this.recalcularMedico();
+        }
       }
     });
 
     this.searchService.term$.subscribe((texto) => {
       this.busqueda = texto;
+    });
+
+    // El rol vive en el perfil compartido (UserService). Si cambia en Settings,
+    // el dashboard alterna entre vista cuidador y vista medico en vivo.
+    this.userService.profile$.subscribe((perfil) => {
+      const eraMedico = this.esMedico;
+      this.esMedico = perfil?.role === 'DOCTOR';
+      if (this.esMedico !== eraMedico && this.seleccionadoId) {
+        // Al pasar a cuidador hay que cargar inventario/citas que antes se omitieron.
+        this.seleccionarPaciente(this.seleccionadoId);
+      } else if (this.esMedico && this.historico.length > 0) {
+        this.recalcularMedico();
+      }
     });
 
     this.refrescoHandle = setInterval(() => {
@@ -223,8 +263,11 @@ export class HomePage implements OnInit, OnDestroy {
     }
     this.seleccionadoId = id;
     this.cargarHistorico();
-    this.cargarInventario();
-    this.cargarCitas();
+    // El medico no gestiona inventario ni citas (el backend devolveria 403), no se piden.
+    if (!this.esMedico) {
+      this.cargarInventario();
+      this.cargarCitas();
+    }
   }
 
   cambiarPeriodo(horas: number): void {
@@ -365,6 +408,9 @@ export class HomePage implements OnInit, OnDestroy {
           this.actualizarGraficaSuave();
         } else {
           this.recalcularGrafica();
+        }
+        if (this.esMedico) {
+          this.recalcularMedico();
         }
       });
   }
@@ -779,5 +825,210 @@ export class HomePage implements OnInit, OnDestroy {
       + '-' + pad(d.getDate())
       + 'T' + pad(d.getHours())
       + ':' + pad(d.getMinutes());
+  }
+
+  // ============ Vista medico (rol DOCTOR) ============
+
+  private recalcularMedico(): void {
+    this.recalcularVariabilidad();
+    this.recalcularTir5();
+    this.construirPerfilDiario();
+    this.construirHeatmap();
+  }
+
+  // DE y CV% sobre mg/dL (la unidad del sensor); GMI usa el promedio en mg/dL.
+  private recalcularVariabilidad(): void {
+    const n = this.historico.length;
+    if (n === 0) {
+      this.desviacion = this.coefVariacion = this.gmi = 0;
+      return;
+    }
+    const media = this.promedio;
+    let sumaCuadrados = 0;
+    for (const p of this.historico) {
+      const d = p.mgDl - media;
+      sumaCuadrados += d * d;
+    }
+    const de = Math.sqrt(sumaCuadrados / n);
+    this.desviacion = de;
+    this.coefVariacion = media > 0 ? (de / media) * 100 : 0;
+    this.gmi = 3.31 + 0.02392 * media;
+  }
+
+  // Reparte las lecturas en 5 zonas clinicas (umbrales fijos en mg/dL).
+  private recalcularTir5(): void {
+    const n = this.historico.length;
+    if (n === 0) {
+      this.tir5MuyBajo = this.tir5Bajo = this.tir5Rango = this.tir5Alto = this.tir5MuyAlto = 0;
+      return;
+    }
+    let mb = 0, b = 0, r = 0, a = 0, ma = 0;
+    for (const p of this.historico) {
+      const v = p.mgDl;
+      if (v < 54) mb++;
+      else if (v < 70) b++;
+      else if (v <= 180) r++;
+      else if (v <= 250) a++;
+      else ma++;
+    }
+    this.tir5MuyBajo = Math.round((mb / n) * 100);
+    this.tir5Bajo = Math.round((b / n) * 100);
+    this.tir5Rango = Math.round((r / n) * 100);
+    this.tir5Alto = Math.round((a / n) * 100);
+    this.tir5MuyAlto = Math.round((ma / n) * 100);
+  }
+
+  // Glucosa media por hora del dia (0-23) agregando todos los dias del periodo.
+  private construirPerfilDiario(): void {
+    const factor = this.unidades === 'mmol' ? 1 / 18 : 1;
+    const suma = new Array(24).fill(0);
+    const cuenta = new Array(24).fill(0);
+    for (const p of this.historico) {
+      const h = new Date(p.readAt).getHours();
+      suma[h] += p.mgDl;
+      cuenta[h] += 1;
+    }
+    const data: (number | null)[] = [];
+    for (let h = 0; h < 24; h++) {
+      if (cuenta[h] === 0) {
+        data.push(null);
+      } else {
+        const media = suma[h] / cuenta[h];
+        data.push(factor === 1 ? Math.round(media) : Number((media * factor).toFixed(1)));
+      }
+    }
+    this.perfilDiarioChart = {
+      ...this.perfilDiarioChart,
+      series: [{ name: 'Glucosa media', data }],
+      // Banda verde de rango normal, igual que la gráfica principal (umbrales en la unidad mostrada).
+      annotations: {
+        yaxis: [
+          {
+            y: this.umbralBajo * factor,
+            y2: this.umbralAlto * factor,
+            fillColor: '#3fae6e',
+            opacity: 0.1,
+            borderColor: 'transparent',
+          },
+        ],
+      },
+    };
+  }
+
+  // Mapa de calor: filas = ultimos 14 dias, columnas = horas, color = glucosa media (mg/dL).
+  private construirHeatmap(): void {
+    const dias = new Map<string, { suma: number[]; cuenta: number[] }>();
+    for (const p of this.historico) {
+      const d = new Date(p.readAt);
+      const clave = d.getFullYear() + '-' + this.pad2(d.getMonth() + 1) + '-' + this.pad2(d.getDate());
+      let fila = dias.get(clave);
+      if (!fila) {
+        fila = { suma: new Array(24).fill(0), cuenta: new Array(24).fill(0) };
+        dias.set(clave, fila);
+      }
+      const h = d.getHours();
+      fila.suma[h] += p.mgDl;
+      fila.cuenta[h] += 1;
+    }
+    // Orden ascendente + ultimos 14: ApexCharts pinta la serie[0] abajo, asi el dia mas reciente queda arriba.
+    const claves = Array.from(dias.keys()).sort().slice(-14);
+    const series = claves.map((clave) => {
+      const fila = dias.get(clave)!;
+      const data: { x: string; y: number | null }[] = [];
+      for (let h = 0; h < 24; h++) {
+        const y = fila.cuenta[h] === 0 ? null : Math.round(fila.suma[h] / fila.cuenta[h]);
+        data.push({ x: this.pad2(h) + 'h', y });
+      }
+      return { name: this.etiquetaDiaCorta(clave), data };
+    });
+    this.heatmapChart = { ...this.heatmapChart, series };
+  }
+
+  private pad2(n: number): string {
+    return n.toString().padStart(2, '0');
+  }
+
+  private etiquetaDiaCorta(clave: string): string {
+    const partes = clave.split('-');
+    return partes[2] + '/' + partes[1];
+  }
+
+  private crearOpcionesPerfilDiario(): any {
+    const horas: string[] = [];
+    for (let h = 0; h < 24; h++) {
+      horas.push(this.pad2(h));
+    }
+    return {
+      series: [],
+      chart: {
+        type: 'area',
+        height: 220,
+        fontFamily: 'var(--font-sans)',
+        toolbar: { show: false },
+        zoom: { enabled: false },
+      },
+      stroke: { curve: 'smooth', width: 2.5 },
+      fill: {
+        type: 'gradient',
+        gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.05, stops: [0, 100] },
+      },
+      colors: ['#2b86b3'],
+      dataLabels: { enabled: false },
+      markers: { size: 0 },
+      xaxis: {
+        categories: horas,
+        labels: { style: { colors: '#9aa4b2', fontSize: '11px' } },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+        tooltip: { enabled: false },
+      },
+      yaxis: {
+        labels: {
+          style: { colors: '#9aa4b2', fontSize: '11px' },
+          formatter: (valor: number) => `${Math.round(valor)}`,
+        },
+      },
+      grid: { borderColor: '#eef0f3', strokeDashArray: 4 },
+      annotations: { yaxis: [] },
+      tooltip: { theme: 'light' },
+    };
+  }
+
+  private crearOpcionesHeatmap(): any {
+    return {
+      series: [],
+      chart: {
+        type: 'heatmap',
+        height: 320,
+        fontFamily: 'var(--font-sans)',
+        toolbar: { show: false },
+      },
+      dataLabels: { enabled: false },
+      colors: ['#2b86b3'],
+      xaxis: {
+        type: 'category',
+        labels: { style: { colors: '#9aa4b2', fontSize: '10px' } },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+      },
+      yaxis: { labels: { style: { colors: '#9aa4b2', fontSize: '11px' } } },
+      grid: { padding: { right: 8 } },
+      plotOptions: {
+        heatmap: {
+          radius: 2,
+          enableShades: false,
+          colorScale: {
+            ranges: [
+              { from: 0, to: 53, color: '#d98a2b', name: 'Muy bajo' },
+              { from: 54, to: 69, color: '#e6b800', name: 'Bajo' },
+              { from: 70, to: 180, color: '#3fae6e', name: 'En rango' },
+              { from: 181, to: 250, color: '#e2574c', name: 'Alto' },
+              { from: 251, to: 600, color: '#b03a30', name: 'Muy alto' },
+            ],
+          },
+        },
+      },
+      tooltip: { theme: 'light' },
+    };
   }
 }

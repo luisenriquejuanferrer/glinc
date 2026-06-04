@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import {
+  CaregiverRole,
   UpdateUserProfileRequest,
   UserProfile,
 } from '../models/user.model';
@@ -26,6 +27,13 @@ export class UserService {
   update(cambios: UpdateUserProfileRequest): Observable<UserProfile> {
     return this.http
       .put<UserProfile>(this.apiBase + '/user/profile', cambios)
+      .pipe(tap((perfil) => this.profileSubject.next(perfil)));
+  }
+
+  // Lo usan el modal de primera sesión y el selector de Settings.
+  updateRole(role: CaregiverRole): Observable<UserProfile> {
+    return this.http
+      .put<UserProfile>(this.apiBase + '/user/role', { role })
       .pipe(tap((perfil) => this.profileSubject.next(perfil)));
   }
 

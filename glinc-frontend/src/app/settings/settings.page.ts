@@ -7,6 +7,7 @@ import { UserService } from '../services/user.service';
 import { PreferencesService } from '../services/preferences.service';
 import { ProblemDetails } from '../models/auth.model';
 import { Unidades } from '../models/preferences.model';
+import { CaregiverRole } from '../models/user.model';
 
 @Component({
   selector: 'app-settings',
@@ -23,9 +24,11 @@ export class SettingsPage implements OnInit {
   lastName = '';
   birthDate = '';
   phone = '';
+  role: CaregiverRole | null = null;
 
   cargandoPerfil = false;
   guardando = false;
+  guardandoRol = false;
   mensaje: { tipo: 'ok' | 'error'; texto: string } | null = null;
 
   pacientesVinculados = 0;
@@ -101,11 +104,36 @@ export class SettingsPage implements OnInit {
     });
   }
 
-  private aplicarPerfil(perfil: { firstName: string | null; lastName: string | null; birthDate: string | null; phone: string | null }): void {
+  private aplicarPerfil(perfil: { firstName: string | null; lastName: string | null; birthDate: string | null; phone: string | null; role?: CaregiverRole | null }): void {
     this.firstName = perfil.firstName ?? '';
     this.lastName = perfil.lastName ?? '';
     this.birthDate = perfil.birthDate ?? '';
     this.phone = perfil.phone ?? '';
+    this.role = perfil.role ?? null;
+  }
+
+  // Cambia el rol al instante (re-emite profile$ → el dashboard alterna vista cuidador/médico).
+  cambiarRol(nuevo: CaregiverRole): void {
+    if (this.guardandoRol || this.role === nuevo) {
+      return;
+    }
+    this.guardandoRol = true;
+    this.mensaje = null;
+    this.userService.updateRole(nuevo).subscribe({
+      next: (perfil) => {
+        this.guardandoRol = false;
+        this.role = perfil.role;
+        this.mensaje = { tipo: 'ok', texto: 'Rol actualizado.' };
+      },
+      error: (err: HttpErrorResponse) => {
+        this.guardandoRol = false;
+        const problem = err.error as ProblemDetails;
+        this.mensaje = {
+          tipo: 'error',
+          texto: problem?.detail ?? 'No se pudo cambiar el rol.',
+        };
+      },
+    });
   }
 
   cargarSesion(): void {

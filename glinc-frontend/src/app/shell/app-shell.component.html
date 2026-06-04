@@ -145,4 +145,42 @@
     *ngIf="modalInvitarAbierto"
     (cerrado)="cerrarModalInvitar()">
   </app-invite-modal>
+
+  <!-- Primera sesión: bloqueante hasta elegir rol. Sin cierre por backdrop ni botón. -->
+  <div class="glw-modal-bg" *ngIf="mostrarModalRol">
+    <div class="glw-modal" (click)="$event.stopPropagation()">
+      <div class="glw-modal-head">
+        <div style="flex: 1;">
+          <div style="font-size: 20px; font-weight: 600; letter-spacing: -0.015em;">
+            ¿Cómo usarás Glinc?
+          </div>
+          <div style="font-size: 13px; color: var(--ink-mute); margin-top: 4px;">
+            Elige tu rol. Podrás cambiarlo después en Configuración › Cuenta.
+          </div>
+        </div>
+      </div>
+      <div class="glw-modal-body">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div
+            class="gl-card clickable"
+            [style.opacity]="guardandoRol ? 0.6 : 1"
+            (click)="elegirRol('CAREGIVER')">
+            <div style="font-size: 16px; font-weight: 600;">Cuidador</div>
+            <div style="font-size: 13px; color: var(--ink-mute); margin-top: 4px;">
+              Padres o tutores. Dashboard con inventario de material y citas médicas.
+            </div>
+          </div>
+          <div
+            class="gl-card clickable"
+            [style.opacity]="guardandoRol ? 0.6 : 1"
+            (click)="elegirRol('DOCTOR')">
+            <div style="font-size: 16px; font-weight: 600;">Médico</div>
+            <div style="font-size: 13px; color: var(--ink-mute); margin-top: 4px;">
+              Vista clínica: variabilidad, perfil diario y mapa de calor. Sin inventario ni citas.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

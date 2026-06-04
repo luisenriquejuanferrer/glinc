@@ -4,6 +4,7 @@ import { GlucoseService } from '../services/glucose.service';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 import { SearchService } from '../services/search.service';
+import { CaregiverRole } from '../models/user.model';
 
 @Component({
   selector: 'app-shell',
@@ -22,6 +23,10 @@ export class AppShellComponent implements OnInit {
   nombreUsuario = '';
   emailUsuario = '';
   inicialesUsuario = '?';
+
+  // Modal bloqueante de primera sesión: aparece mientras el perfil no tenga rol.
+  mostrarModalRol = false;
+  guardandoRol = false;
 
   constructor(
     private router: Router,
@@ -68,6 +73,8 @@ export class AppShellComponent implements OnInit {
         apellido,
         perfil.email,
       );
+      // null = aún no ha elegido rol → modal bloqueante.
+      this.mostrarModalRol = perfil.role == null;
     });
 
     this.userService.refresh().subscribe({
@@ -112,6 +119,22 @@ export class AppShellComponent implements OnInit {
 
   toggleMenuUsuario(): void {
     this.menuUsuarioAbierto = !this.menuUsuarioAbierto;
+  }
+
+  elegirRol(rol: CaregiverRole): void {
+    if (this.guardandoRol) {
+      return;
+    }
+    this.guardandoRol = true;
+    this.userService.updateRole(rol).subscribe({
+      next: () => {
+        this.guardandoRol = false;
+        this.mostrarModalRol = false;
+      },
+      error: () => {
+        this.guardandoRol = false;
+      },
+    });
   }
 
   irAConfiguracion(): void {
