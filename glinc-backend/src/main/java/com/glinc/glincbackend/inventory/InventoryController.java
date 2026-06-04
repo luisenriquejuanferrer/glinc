@@ -2,6 +2,7 @@ package com.glinc.glincbackend.inventory;
 
 import com.glinc.glincbackend.auth.AppSession;
 import com.glinc.glincbackend.bridge.dto.BridgePatient;
+import com.glinc.glincbackend.user.CaregiverRole;
 import com.glinc.glincbackend.inventory.dto.InventoryItemDto;
 import com.glinc.glincbackend.inventory.dto.UpdateInventoryRequest;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +38,11 @@ public class InventoryController {
                     "PATIENT_NOT_FOUND",
                     "El paciente no esta vinculado a tu cuenta.");
         }
+        if (esMedico(sesion)) {
+            return errorProblem(HttpStatus.FORBIDDEN,
+                    "ROLE_FORBIDDEN",
+                    "El rol DOCTOR no gestiona inventario.");
+        }
 
         List<InventoryItemDto> lista = service.list(patientId);
         return ResponseEntity.ok(lista);
@@ -52,6 +58,11 @@ public class InventoryController {
             return errorProblem(HttpStatus.NOT_FOUND,
                     "PATIENT_NOT_FOUND",
                     "El paciente no esta vinculado a tu cuenta.");
+        }
+        if (esMedico(sesion)) {
+            return errorProblem(HttpStatus.FORBIDDEN,
+                    "ROLE_FORBIDDEN",
+                    "El rol DOCTOR no gestiona inventario.");
         }
 
         InventoryItemType tipo = parseTipo(type);
@@ -74,6 +85,11 @@ public class InventoryController {
 
         InventoryItemDto guardada = service.update(patientId, tipo, body);
         return ResponseEntity.ok(guardada);
+    }
+
+    // El inventario es competencia del cuidador; el medico tiene vista clinica sin gestion.
+    private boolean esMedico(AppSession sesion) {
+        return sesion != null && sesion.getRole() == CaregiverRole.DOCTOR;
     }
 
     // Impide leer/escribir inventario de pacientes no vinculados a la sesion del cuidador.

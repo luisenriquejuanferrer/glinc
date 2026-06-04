@@ -4,6 +4,7 @@ import com.glinc.glincbackend.appointments.dto.AppointmentDto;
 import com.glinc.glincbackend.appointments.dto.SaveAppointmentRequest;
 import com.glinc.glincbackend.auth.AppSession;
 import com.glinc.glincbackend.bridge.dto.BridgePatient;
+import com.glinc.glincbackend.user.CaregiverRole;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,11 @@ public class AppointmentController {
                     "PATIENT_NOT_FOUND",
                     "El paciente no esta vinculado a tu cuenta.");
         }
+        if (esMedico(sesion)) {
+            return errorProblem(HttpStatus.FORBIDDEN,
+                    "ROLE_FORBIDDEN",
+                    "El rol DOCTOR no gestiona citas medicas.");
+        }
         List<AppointmentDto> lista = service.list(patientId);
         return ResponseEntity.ok(lista);
     }
@@ -52,6 +58,11 @@ public class AppointmentController {
             return errorProblem(HttpStatus.NOT_FOUND,
                     "PATIENT_NOT_FOUND",
                     "El paciente no esta vinculado a tu cuenta.");
+        }
+        if (esMedico(sesion)) {
+            return errorProblem(HttpStatus.FORBIDDEN,
+                    "ROLE_FORBIDDEN",
+                    "El rol DOCTOR no gestiona citas medicas.");
         }
         String validacion = validar(body);
         if (validacion != null) {
@@ -71,6 +82,11 @@ public class AppointmentController {
             return errorProblem(HttpStatus.NOT_FOUND,
                     "PATIENT_NOT_FOUND",
                     "El paciente no esta vinculado a tu cuenta.");
+        }
+        if (esMedico(sesion)) {
+            return errorProblem(HttpStatus.FORBIDDEN,
+                    "ROLE_FORBIDDEN",
+                    "El rol DOCTOR no gestiona citas medicas.");
         }
         String validacion = validar(body);
         if (validacion != null) {
@@ -94,6 +110,11 @@ public class AppointmentController {
             return errorProblem(HttpStatus.NOT_FOUND,
                     "PATIENT_NOT_FOUND",
                     "El paciente no esta vinculado a tu cuenta.");
+        }
+        if (esMedico(sesion)) {
+            return errorProblem(HttpStatus.FORBIDDEN,
+                    "ROLE_FORBIDDEN",
+                    "El rol DOCTOR no gestiona citas medicas.");
         }
         boolean borrada = service.delete(id);
         if (!borrada) {
@@ -122,6 +143,11 @@ public class AppointmentController {
             return "El motivo no puede superar 300 caracteres.";
         }
         return null;
+    }
+
+    // Las citas las gestiona el cuidador; el medico tiene vista clinica sin gestion.
+    private boolean esMedico(AppSession sesion) {
+        return sesion != null && sesion.getRole() == CaregiverRole.DOCTOR;
     }
 
     private boolean pertenece(AppSession sesion, String patientId) {

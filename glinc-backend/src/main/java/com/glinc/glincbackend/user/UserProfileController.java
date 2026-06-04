@@ -1,6 +1,7 @@
 package com.glinc.glincbackend.user;
 
 import com.glinc.glincbackend.auth.AppSession;
+import com.glinc.glincbackend.user.dto.UpdateRoleRequest;
 import com.glinc.glincbackend.user.dto.UpdateUserProfileRequest;
 import com.glinc.glincbackend.user.dto.UserProfileDto;
 import jakarta.servlet.http.HttpServletRequest;
@@ -68,6 +69,40 @@ public class UserProfileController {
         AppSession sesion = (AppSession) request.getAttribute("appSession");
         UserProfileDto actualizado = service.update(sesion.getEmail(), body);
         return ResponseEntity.ok(actualizado);
+    }
+
+    // Lo invoca el modal de primera sesion y el selector de Settings.
+    @PutMapping("/role")
+    public ResponseEntity<?> updateRole(HttpServletRequest request,
+                                        @RequestBody UpdateRoleRequest body) {
+        if (body == null || body.getRole() == null || body.getRole().isBlank()) {
+            return errorProblem(HttpStatus.BAD_REQUEST,
+                    "VALIDATION_ERROR",
+                    "El rol es obligatorio.");
+        }
+
+        CaregiverRole rol = parseRol(body.getRole());
+        if (rol == null) {
+            return errorProblem(HttpStatus.BAD_REQUEST,
+                    "VALIDATION_ERROR",
+                    "Rol invalido: debe ser CAREGIVER o DOCTOR.");
+        }
+
+        AppSession sesion = (AppSession) request.getAttribute("appSession");
+        UserProfileDto actualizado = service.updateRole(sesion.getEmail(), rol);
+        // La sesion en memoria es la fuente para los guards 403: la actualizamos
+        // aqui mismo para que el cambio surta efecto sin re-login.
+        sesion.setRole(rol);
+        return ResponseEntity.ok(actualizado);
+    }
+
+    private CaregiverRole parseRol(String texto) {
+        for (CaregiverRole r : CaregiverRole.values()) {
+            if (r.name().equalsIgnoreCase(texto.trim())) {
+                return r;
+            }
+        }
+        return null;
     }
 
     private boolean excedeLimite(String valor, int max) {

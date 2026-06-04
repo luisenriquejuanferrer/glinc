@@ -142,4 +142,29 @@ class UserProfileServiceTest {
         assertThat(dto.getLastName()).isNull();
         assertThat(dto.getPhone()).isNull();
     }
+
+    @Test
+    void getProfile_perfilSinRol_devuelveRoleNull() {
+        UserProfile perfil = new UserProfile(EMAIL);
+        perfil.setFirstName("Ana");
+        when(repository.findById(EMAIL)).thenReturn(Optional.of(perfil));
+
+        UserProfileDto dto = service.getProfile(EMAIL);
+
+        assertThat(dto.getRole()).isNull();
+    }
+
+    @Test
+    void updateRole_persisteRolYLoDevuelveComoTexto() {
+        UserProfile existente = new UserProfile(EMAIL);
+        when(repository.findById(EMAIL)).thenReturn(Optional.of(existente));
+        when(repository.save(any(UserProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UserProfileDto dto = service.updateRole(EMAIL, CaregiverRole.DOCTOR);
+
+        ArgumentCaptor<UserProfile> captor = ArgumentCaptor.forClass(UserProfile.class);
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getRole()).isEqualTo(CaregiverRole.DOCTOR);
+        assertThat(dto.getRole()).isEqualTo("DOCTOR");
+    }
 }

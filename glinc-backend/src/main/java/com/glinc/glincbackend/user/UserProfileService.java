@@ -57,6 +57,15 @@ public class UserProfileService {
         return toDto(guardado);
     }
 
+    // Lo usa el modal de primera sesion y el selector de Settings.
+    public UserProfileDto updateRole(String email, CaregiverRole role) {
+        UserProfile perfil = findOrCreate(email);
+        perfil.setRole(role);
+        UserProfile guardado = repository.save(perfil);
+        log.info("Rol actualizado: {} -> {}", email, role);
+        return toDto(guardado);
+    }
+
     private UserProfileDto toDto(UserProfile perfil) {
         return new UserProfileDto(
                 perfil.getEmail(),
@@ -64,6 +73,7 @@ public class UserProfileService {
                 perfil.getLastName(),
                 perfil.getBirthDate(),
                 perfil.getPhone(),
+                perfil.getRole() == null ? null : perfil.getRole().name(),
                 perfil.getUpdatedAt());
     }
 

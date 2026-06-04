@@ -2,6 +2,8 @@ package com.glinc.glincbackend.user;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -31,6 +33,11 @@ public class UserProfile {
 
     @Column(name = "phone", length = 30)
     private String phone;
+
+    // NULL hasta que el usuario elige rol en el modal de primera sesion.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 20)
+    private CaregiverRole role;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -97,6 +104,14 @@ public class UserProfile {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public CaregiverRole getRole() {
+        return role;
+    }
+
+    public void setRole(CaregiverRole role) {
+        this.role = role;
     }
 
     public Instant getCreatedAt() {

@@ -9,6 +9,7 @@ import com.glinc.glincbackend.bridge.dto.SessionResponse;
 import com.glinc.glincbackend.cgm.HistoryBackfillService;
 import com.glinc.glincbackend.patient.CaregiverPatientService;
 import com.glinc.glincbackend.patient.PatientService;
+import com.glinc.glincbackend.user.UserProfile;
 import com.glinc.glincbackend.user.UserProfileService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -86,7 +87,10 @@ public class AuthController {
 
             // Tambien antes del backfill: caregiver_patients require que `caregivers.email` exista,
             // asi que primero creamos/encontramos el perfil del cuidador.
-            userProfileService.findOrCreate(peticion.getEmail());
+            UserProfile perfil = userProfileService.findOrCreate(peticion.getEmail());
+            // El rol viaja en la sesion para que los guards 403 no peguen a BD en cada request.
+            // null = aun no elegido; el frontend mostrara el modal de seleccion.
+            sesion.setRole(perfil.getRole());
             caregiverPatientService.linkAll(peticion.getEmail(), sesion.getPatients());
 
             historyBackfillService.backfillAsync(sesion);
