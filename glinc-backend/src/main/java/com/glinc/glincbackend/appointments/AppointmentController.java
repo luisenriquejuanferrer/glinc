@@ -5,6 +5,7 @@ import com.glinc.glincbackend.appointments.dto.SaveAppointmentRequest;
 import com.glinc.glincbackend.auth.AppSession;
 import com.glinc.glincbackend.bridge.dto.BridgePatient;
 import com.glinc.glincbackend.user.CaregiverRole;
+import com.glinc.glincbackend.web.ApiException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/patients/{patientId}/appointments")
@@ -36,12 +35,12 @@ public class AppointmentController {
                                   @PathVariable String patientId) {
         AppSession sesion = (AppSession) request.getAttribute("appSession");
         if (!pertenece(sesion, patientId)) {
-            return errorProblem(HttpStatus.NOT_FOUND,
+            throw new ApiException(HttpStatus.NOT_FOUND,
                     "PATIENT_NOT_FOUND",
                     "El paciente no esta vinculado a tu cuenta.");
         }
         if (esMedico(sesion)) {
-            return errorProblem(HttpStatus.FORBIDDEN,
+            throw new ApiException(HttpStatus.FORBIDDEN,
                     "ROLE_FORBIDDEN",
                     "El rol DOCTOR no gestiona citas medicas.");
         }
@@ -55,18 +54,18 @@ public class AppointmentController {
                                     @RequestBody SaveAppointmentRequest body) {
         AppSession sesion = (AppSession) request.getAttribute("appSession");
         if (!pertenece(sesion, patientId)) {
-            return errorProblem(HttpStatus.NOT_FOUND,
+            throw new ApiException(HttpStatus.NOT_FOUND,
                     "PATIENT_NOT_FOUND",
                     "El paciente no esta vinculado a tu cuenta.");
         }
         if (esMedico(sesion)) {
-            return errorProblem(HttpStatus.FORBIDDEN,
+            throw new ApiException(HttpStatus.FORBIDDEN,
                     "ROLE_FORBIDDEN",
                     "El rol DOCTOR no gestiona citas medicas.");
         }
         String validacion = validar(body);
         if (validacion != null) {
-            return errorProblem(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", validacion);
+            throw new ApiException(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", validacion);
         }
         AppointmentDto creada = service.create(patientId, body);
         return ResponseEntity.status(HttpStatus.CREATED).body(creada);
@@ -79,22 +78,22 @@ public class AppointmentController {
                                     @RequestBody SaveAppointmentRequest body) {
         AppSession sesion = (AppSession) request.getAttribute("appSession");
         if (!pertenece(sesion, patientId)) {
-            return errorProblem(HttpStatus.NOT_FOUND,
+            throw new ApiException(HttpStatus.NOT_FOUND,
                     "PATIENT_NOT_FOUND",
                     "El paciente no esta vinculado a tu cuenta.");
         }
         if (esMedico(sesion)) {
-            return errorProblem(HttpStatus.FORBIDDEN,
+            throw new ApiException(HttpStatus.FORBIDDEN,
                     "ROLE_FORBIDDEN",
                     "El rol DOCTOR no gestiona citas medicas.");
         }
         String validacion = validar(body);
         if (validacion != null) {
-            return errorProblem(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", validacion);
+            throw new ApiException(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", validacion);
         }
         AppointmentDto actualizada = service.update(id, body);
         if (actualizada == null) {
-            return errorProblem(HttpStatus.NOT_FOUND,
+            throw new ApiException(HttpStatus.NOT_FOUND,
                     "APPOINTMENT_NOT_FOUND",
                     "La cita no existe.");
         }
@@ -107,18 +106,18 @@ public class AppointmentController {
                                     @PathVariable Long id) {
         AppSession sesion = (AppSession) request.getAttribute("appSession");
         if (!pertenece(sesion, patientId)) {
-            return errorProblem(HttpStatus.NOT_FOUND,
+            throw new ApiException(HttpStatus.NOT_FOUND,
                     "PATIENT_NOT_FOUND",
                     "El paciente no esta vinculado a tu cuenta.");
         }
         if (esMedico(sesion)) {
-            return errorProblem(HttpStatus.FORBIDDEN,
+            throw new ApiException(HttpStatus.FORBIDDEN,
                     "ROLE_FORBIDDEN",
                     "El rol DOCTOR no gestiona citas medicas.");
         }
         boolean borrada = service.delete(id);
         if (!borrada) {
-            return errorProblem(HttpStatus.NOT_FOUND,
+            throw new ApiException(HttpStatus.NOT_FOUND,
                     "APPOINTMENT_NOT_FOUND",
                     "La cita no existe.");
         }
@@ -160,16 +159,5 @@ public class AppointmentController {
             }
         }
         return false;
-    }
-
-    private ResponseEntity<Map<String, Object>> errorProblem(
-            HttpStatus status, String code, String detail) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("type", "about:blank");
-        body.put("title", status.getReasonPhrase());
-        body.put("status", status.value());
-        body.put("code", code);
-        body.put("detail", detail);
-        return ResponseEntity.status(status).body(body);
     }
 }

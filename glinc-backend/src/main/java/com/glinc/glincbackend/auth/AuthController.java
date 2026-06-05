@@ -11,6 +11,7 @@ import com.glinc.glincbackend.patient.CaregiverPatientService;
 import com.glinc.glincbackend.patient.PatientService;
 import com.glinc.glincbackend.user.UserProfile;
 import com.glinc.glincbackend.user.UserProfileService;
+import com.glinc.glincbackend.web.ApiException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -64,7 +63,7 @@ public class AuthController {
                 || peticion.getEmail().isBlank()
                 || peticion.getPassword() == null
                 || peticion.getPassword().isBlank()) {
-            return errorProblem(HttpStatus.BAD_REQUEST,
+            throw new ApiException(HttpStatus.BAD_REQUEST,
                     "VALIDATION_ERROR",
                     "Email y password son obligatorios.");
         }
@@ -104,7 +103,7 @@ public class AuthController {
 
         } catch (BridgeException e) {
             log.warn("Login fallido para {}: {}", peticion.getEmail(), e.getMessage());
-            return errorProblem(HttpStatus.UNAUTHORIZED,
+            throw new ApiException(HttpStatus.UNAUTHORIZED,
                     "LOGIN_FAILED",
                     "No se pudo iniciar sesion. Revisa tu email y password de LibreLinkUp.");
         }
@@ -151,16 +150,5 @@ public class AuthController {
             return null;
         }
         return token;
-    }
-
-    private ResponseEntity<Map<String, Object>> errorProblem(
-            HttpStatus status, String code, String detail) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("type", "about:blank");
-        body.put("title", status.getReasonPhrase());
-        body.put("status", status.value());
-        body.put("code", code);
-        body.put("detail", detail);
-        return ResponseEntity.status(status).body(body);
     }
 }

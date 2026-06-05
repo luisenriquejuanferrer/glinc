@@ -5,6 +5,7 @@ import com.glinc.glincbackend.bridge.dto.BridgePatient;
 import com.glinc.glincbackend.user.CaregiverRole;
 import com.glinc.glincbackend.inventory.dto.InventoryItemDto;
 import com.glinc.glincbackend.inventory.dto.UpdateInventoryRequest;
+import com.glinc.glincbackend.web.ApiException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/patients/{patientId}/inventory")
@@ -34,12 +33,12 @@ public class InventoryController {
                                   @PathVariable String patientId) {
         AppSession sesion = (AppSession) request.getAttribute("appSession");
         if (!pertenece(sesion, patientId)) {
-            return errorProblem(HttpStatus.NOT_FOUND,
+            throw new ApiException(HttpStatus.NOT_FOUND,
                     "PATIENT_NOT_FOUND",
                     "El paciente no esta vinculado a tu cuenta.");
         }
         if (esMedico(sesion)) {
-            return errorProblem(HttpStatus.FORBIDDEN,
+            throw new ApiException(HttpStatus.FORBIDDEN,
                     "ROLE_FORBIDDEN",
                     "El rol DOCTOR no gestiona inventario.");
         }
@@ -55,30 +54,30 @@ public class InventoryController {
                                     @RequestBody UpdateInventoryRequest body) {
         AppSession sesion = (AppSession) request.getAttribute("appSession");
         if (!pertenece(sesion, patientId)) {
-            return errorProblem(HttpStatus.NOT_FOUND,
+            throw new ApiException(HttpStatus.NOT_FOUND,
                     "PATIENT_NOT_FOUND",
                     "El paciente no esta vinculado a tu cuenta.");
         }
         if (esMedico(sesion)) {
-            return errorProblem(HttpStatus.FORBIDDEN,
+            throw new ApiException(HttpStatus.FORBIDDEN,
                     "ROLE_FORBIDDEN",
                     "El rol DOCTOR no gestiona inventario.");
         }
 
         InventoryItemType tipo = parseTipo(type);
         if (tipo == null) {
-            return errorProblem(HttpStatus.BAD_REQUEST,
+            throw new ApiException(HttpStatus.BAD_REQUEST,
                     "VALIDATION_ERROR",
                     "Tipo de inventario invalido: " + type);
         }
 
         if (body == null) {
-            return errorProblem(HttpStatus.BAD_REQUEST,
+            throw new ApiException(HttpStatus.BAD_REQUEST,
                     "VALIDATION_ERROR",
                     "Falta el cuerpo de la peticion.");
         }
         if (body.getQuantity() != null && body.getQuantity().length() > 60) {
-            return errorProblem(HttpStatus.BAD_REQUEST,
+            throw new ApiException(HttpStatus.BAD_REQUEST,
                     "VALIDATION_ERROR",
                     "La cantidad no puede superar 60 caracteres.");
         }
@@ -115,16 +114,5 @@ public class InventoryController {
             }
         }
         return null;
-    }
-
-    private ResponseEntity<Map<String, Object>> errorProblem(
-            HttpStatus status, String code, String detail) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("type", "about:blank");
-        body.put("title", status.getReasonPhrase());
-        body.put("status", status.value());
-        body.put("code", code);
-        body.put("detail", detail);
-        return ResponseEntity.status(status).body(body);
     }
 }

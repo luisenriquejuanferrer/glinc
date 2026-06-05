@@ -4,6 +4,7 @@ import com.glinc.glincbackend.auth.AppSession;
 import com.glinc.glincbackend.user.dto.UpdateRoleRequest;
 import com.glinc.glincbackend.user.dto.UpdateUserProfileRequest;
 import com.glinc.glincbackend.user.dto.UserProfileDto;
+import com.glinc.glincbackend.web.ApiException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
 
 // El email se saca SIEMPRE de la sesion (AppSession), nunca del body, para impedir editar perfil ajeno.
 @RestController
@@ -39,29 +38,29 @@ public class UserProfileController {
     public ResponseEntity<?> updateProfile(HttpServletRequest request,
                                            @RequestBody UpdateUserProfileRequest body) {
         if (body == null) {
-            return errorProblem(HttpStatus.BAD_REQUEST,
+            throw new ApiException(HttpStatus.BAD_REQUEST,
                     "VALIDATION_ERROR",
                     "Falta el cuerpo de la peticion.");
         }
 
         if (excedeLimite(body.getFirstName(), 100)) {
-            return errorProblem(HttpStatus.BAD_REQUEST,
+            throw new ApiException(HttpStatus.BAD_REQUEST,
                     "VALIDATION_ERROR",
                     "El nombre no puede superar 100 caracteres.");
         }
         if (excedeLimite(body.getLastName(), 100)) {
-            return errorProblem(HttpStatus.BAD_REQUEST,
+            throw new ApiException(HttpStatus.BAD_REQUEST,
                     "VALIDATION_ERROR",
                     "El apellido no puede superar 100 caracteres.");
         }
         if (excedeLimite(body.getPhone(), 30)) {
-            return errorProblem(HttpStatus.BAD_REQUEST,
+            throw new ApiException(HttpStatus.BAD_REQUEST,
                     "VALIDATION_ERROR",
                     "El telefono no puede superar 30 caracteres.");
         }
         LocalDate nacimiento = body.getBirthDate();
         if (nacimiento != null && nacimiento.isAfter(LocalDate.now())) {
-            return errorProblem(HttpStatus.BAD_REQUEST,
+            throw new ApiException(HttpStatus.BAD_REQUEST,
                     "VALIDATION_ERROR",
                     "La fecha de nacimiento no puede ser futura.");
         }
@@ -76,14 +75,14 @@ public class UserProfileController {
     public ResponseEntity<?> updateRole(HttpServletRequest request,
                                         @RequestBody UpdateRoleRequest body) {
         if (body == null || body.getRole() == null || body.getRole().isBlank()) {
-            return errorProblem(HttpStatus.BAD_REQUEST,
+            throw new ApiException(HttpStatus.BAD_REQUEST,
                     "VALIDATION_ERROR",
                     "El rol es obligatorio.");
         }
 
         CaregiverRole rol = parseRol(body.getRole());
         if (rol == null) {
-            return errorProblem(HttpStatus.BAD_REQUEST,
+            throw new ApiException(HttpStatus.BAD_REQUEST,
                     "VALIDATION_ERROR",
                     "Rol invalido: debe ser CAREGIVER o DOCTOR.");
         }
@@ -110,16 +109,5 @@ public class UserProfileController {
             return false;
         }
         return valor.trim().length() > max;
-    }
-
-    private ResponseEntity<Map<String, Object>> errorProblem(
-            HttpStatus status, String code, String detail) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("type", "about:blank");
-        body.put("title", status.getReasonPhrase());
-        body.put("status", status.value());
-        body.put("code", code);
-        body.put("detail", detail);
-        return ResponseEntity.status(status).body(body);
     }
 }
