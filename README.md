@@ -53,8 +53,6 @@ Una persona que cuida a varios pacientes diabéticos (un familiar, un profesiona
 
 ## Capturas
 
-> Coloca las imágenes en `docs/` con estos nombres.
-
 | Dashboard | Detalle del paciente |
 |---|---|
 | ![Dashboard](docs/dashboard.png) | ![Detalle](docs/detalle.png) |
