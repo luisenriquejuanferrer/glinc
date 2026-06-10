@@ -260,3 +260,4 @@ Proyecto sin afiliación con Abbott. Usa la API no oficial de LibreLink Up; su d
 ## Licencia
 
 Trabajo de Fin de Grado — uso educativo. Para otros usos, contacta con el autor.
+
